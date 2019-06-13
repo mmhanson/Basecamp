@@ -3,14 +3,19 @@
  * implemented from scratch in pure, old fashioned C.
  *
  * All functions in this header are prepended with 'linked_list_' to create a
- * psuedo-namespace.
+ * psuedo-namespace. The linked list supports operations to: create a new linked list,
+ * add an element (at the end or at an index), remove an element (from the end or by
+ * key), test if a key is in the list, and determine the size of the list.
+ *
+ * Written by Max Hanson, June 2019.
  */
 
 #ifndef LINKED_LIST_H
 #define LINKED_LIST_H
 
+
 /**
- * A generic forward linked-list data structure.
+ * A generic forward-linked-list data structure.
  *
  * Note that by 'generic' I mean the key is a void pointer that can point to any data
  * type. It is the client's responsibility to track what data type the linked list's
@@ -20,7 +25,7 @@
  *   - The key of all nodes points to the same type of data.
  *   - The next node of all nodes either points to a node or is NULL (tail).
  *   - There are no loops in the list.
- *   - The head node leads to the tail node through an arbitrary number of 'next's.
+ *   - The head node leads to the tail node.
  *   - The tail nodes next node is NULL.
  */
 typedef struct linked_list_node_tag
@@ -36,79 +41,97 @@ typedef struct linked_list_tag
     LinkedListNode *tail;
 } LinkedList;
 
-
 /**
- * Create a new linked list with one element.
+ * Create a new linked list from a key.
  *
  * Every case complexity: BIG-THETA(1).
  * If:
- *   - 'head_key' is not NULL.
+ *   - The head_key is not NULL.
  * Then:
- *   - A valid LinkedList with a head node such that:
- *     - Its 'key' is 'head_key'.
- *     - Its 'next' is NULL.
+ *   - A valid LinkedList is returned such that:
+ *     - Its head nodes key is the head_key.
+ *     - Its head node is its tail node.
  */
 LinkedList *linked_list_new(void *head_key);
 
 /**
- * Add an element to the back of a linked list.
+ * Append a key to a linked list.
  *
  * Every case complexity: BIG-THETA(1).
  * If:
- *   - 'list' is a valid LinkedList.
- *   - 'key' points to the same data type as all nodes of 'list'.
+ *   - The list is a valid LinkedList.
+ *   - The key points to the same data type as all nodes of the list.
  * Then:
- *   -  The tail of 'list' will now point to a new node whose key is 'key' and whose
- *      'next' is NULL.
+ *   - A new node is created whose key is The key.
+ *   - The lists previous tail will point to this new node.
+ *   - The lists tail member will point to this new node.
  */
 void linked_list_add(LinkedList *list, void *key);
 
 /**
  * Add an element to the i-th index of a linked list.
  *
- * Every case complexity: O(n) where n is the number of nodes in 'list'.
- * Worst case complexity: BIG-THETA(n) where n is the number of nodes in 'list'.
+ * Every case complexity: O(n) where n is the number of nodes in the list.
+ * Worst case complexity: BIG-THETA(n).
  * Best case complexity: BIG-THETA(1).
  * If:
- *   - 'list' is a valid LinkedList.
- *   - 'key' points to the same data type as all nodes of 'list'.
- *   - 0 <= 'i' < list.size
+ *   - The list is a valid LinkedList.
+ *   - The key points to the same data type as all nodes of the list.
+ *   - 0 <= 'i' <= list.size
  * Then:
- *   - The node at the i-th index of 'list' will be a new node whose key is 'key' and
- *     whose 'next' points to the previous node at the i-th index.
- *   - The node at the (i-1)-th index of 'list' (if any) will point to this new node.
+ *   - A new node is created whose key is The key.
+ *   - This new node will be the i-th node of the list.
+ *   - If i is 0 or list.size, then the lists head or tail member will point to
+ *     this new node.
+ *   - The lists size will be incremented.
  */
 void linked_list_add_at(LinkedList *list, void *key, int i);
 
 /**
  * Remove the i-th node of a linked list.
  *
- * Every case complexity: O(n) where n is the number of elements in 'list'.
- * Worst case complexity: BIG-THETA(n) where n is the number of nodes in 'list'.
+ * Every case complexity: O(n) where n is the number of elements in the list.
+ * Worst case complexity: BIG-THETA(n).
  * Best case complexity: BIG-THETA(1).
  * If:
- *   - 'list' is a valid LinkedList.
+ *   - The list is a valid LinkedList.
  *   - 0 <= i < 'list.size'.
  * Then:
- *   - The node at the i-th index of 'list' will be removed.
- *   - The (i-1)-th node will point to the (previously) (i+1)-th node of 'list'.
+ *   - The node previously at the lists i-th index will be removed.
  */
 void linked_list_remove_at(LinkedList *list, int i);
 
 /**
- * Remove the node of a linked list containing a certain key.
+ * Remove the first node containing a certain key from a linked list.
  *
- * Every case complexity: O(n) where n is the number of elements in 'list'.
- * Worst case complexity: BIG-THETA(n) where n is the number of nodes in 'list'.
+ * Every case complexity: O(n) where n is the number of elements in the list.
+ * Worst case complexity: BIG-THETA(n).
  * Best case complexity: BIG-THETA(1).
  * If:
- *   - 'list' is a valid LinkedList.
- *   - 'key' is not NULL.
+ *   - The list is a valid LinkedList.
+ *   - The key is not NULL.
  * Then:
- *   - The first node, if any, whose key equals 'key' (comparing addresses) will be
- *     removed from 'list'.
- *   - If no nodes in 'list' contain 'key', then 'list' is unchanged.
+ *   - If the list contains the key, the first node with the matching key (comparing
+ *     addresses) is removed and true is returned.
+ *   - If the list doesnt contain the key, then the list is unchanged and false is
+ *     returned.
  */
-void linked_list_remove_key(LinkedList *list, void *key);
+bool linked_list_remove_key(LinkedList *list, void *key);
+
+/**
+ * Determine if a linked list contains a key.
+ *
+ * Every case complexity: O(n) where n is the nubmer of elements in the list.
+ * Worst case complexity: BIG-THETA(n).
+ * Best case complexity: BIG-THETA(1).
+ * If:
+ *   - The list is a valid LinkedList.
+ *   - The key is not NULL.
+ * Then:
+ *   - If the list contains the key, then true is returned.
+ *   - If the list doesnt contain the key then false is returned.
+ */
+void linked_list_contains_key(LinkedList *list, vod *key);
+
 
 #endif
