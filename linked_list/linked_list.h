@@ -1,4 +1,4 @@
-/**
+/*
  * A basic, generic forward-linked-list data structure and relevant operations
  * implemented from scratch in pure, old fashioned C.
  *
@@ -11,19 +11,25 @@
  * Written by Max Hanson, June 2019.
  */
 
+
 #ifndef LINKED_LIST_H
 #define LINKED_LIST_H
 
 
-/**
+/*
  * A generic forward-linked-list data structure.
  *
  * Note that by 'generic' I mean the key is a void pointer that can point to any
  * data type. It is the client's responsibility to track what data type the
  * linked list's keys are and safely cast them to/from void pointers.
+ * Also note that it is necessary that each key in the list points to an object
+ * on the heap that was allocated with 'malloc/calloc/realloc'. This is because
+ * each key is freed in the linked_list_destruct operation. Undefined behavior
+ * will occur if this requirement is not met.
  *
  * A LinkedList is valid if, and only if:
  *   - The key of all nodes points to the same type of data.
+ *   - THe key of all nodes points to an object on the heap.
  *   - The next node of all nodes either points to a node or is NULL (tail).
  *   - There are no loops in the list.
  *   - The head node leads to the tail node.
@@ -42,7 +48,7 @@ typedef struct linked_list_tag
     LinkedListNode *tail;
 } LinkedList;
 
-/**
+/*
  * Create a new linked list from a key.
  *
  * Every case complexity: BIG-THETA(1).
@@ -57,9 +63,24 @@ typedef struct linked_list_tag
  *   - If there is not enough space on the heap for a new LinkedList and
  *     LinkedListNode, then NULL is returned.
  */
-LinkedList *linked_list_new(void *head_key);
+LinkedList *linked_list_construct(void *head_key);
 
-/**
+/*
+ * Deallocate a linked list.
+ *
+ * 
+ * Every case runtime: BIG-THETA(n) where n is the size of the list.
+ * If:
+ *   - The list is a valid linked list.
+ * Then:
+ *   - All keys in the list will be freed.
+ *   - All nodes in the list will be freed.
+ *   - The linked list itself will be freed.
+ *   - The list pointer will be NULL.
+ */
+void linked_list_destruct(LinkedList *list);
+
+/*
  * Append a key to a linked list.
  *
  * Every case complexity: BIG-THETA(1).
@@ -74,11 +95,8 @@ LinkedList *linked_list_new(void *head_key);
  */
 void linked_list_add(LinkedList *list, void *key);
 
-/**
+/*
  * Add an element to the i-th index of a linked list.
- *
- * Only supports adding a new head or intermediate node (neither new head nor
- * tail). If you need to add a new tail, use the linked_list_add operation.
  *
  * Every case complexity: O(n) where n is the number of nodes in the list.
  * Worst case complexity: BIG-THETA(n).
@@ -86,7 +104,7 @@ void linked_list_add(LinkedList *list, void *key);
  * If:
  *   - The list is a valid LinkedList.
  *   - The key points to the same data type as all nodes of the list.
- *   - 0 <= 'i' < list.size.
+ *   - 0 <= 'i' <= list.size.
  * Then:
  *   - A new node is created whose key is The key.
  *   - This new node will be the i-th node of the list.
@@ -98,7 +116,7 @@ void linked_list_add(LinkedList *list, void *key);
  */
 void linked_list_add_at(LinkedList *list, void *key, int i);
 
-/**
+/*
  * Remove the i-th node of a linked list.
  *
  * Every case complexity: O(n) where n is the number of elements in the list.
@@ -114,7 +132,7 @@ void linked_list_add_at(LinkedList *list, void *key, int i);
  */
 void linked_list_remove_at(LinkedList *list, int i);
 
-/**
+/*
  * Remove the first node containing a certain key from a linked list.
  *
  * Every case complexity: O(n) where n is the number of elements in the list.
@@ -131,7 +149,7 @@ void linked_list_remove_at(LinkedList *list, int i);
  */
 bool linked_list_remove_key(LinkedList *list, void *key);
 
-/**
+/*
  * Determine if a linked list contains a key.
  *
  * Every case complexity: O(n) where n is the nubmer of elements in the list.

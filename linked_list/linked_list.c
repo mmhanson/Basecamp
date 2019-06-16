@@ -1,5 +1,5 @@
 /**
- * An implementation of the linked list operations.
+ * An implementation of the linked list operations from scratch.
  *
  * See the function definitions in the linked list header for documentation.
  *
@@ -8,7 +8,7 @@
 
 #include "linked_list.h"
 
-LinkedList *linked_list_new(void *head_key)
+LinkedList *linked_list_construct(void *head_key)
 {
     LinkedListNode *new_node;
     LinkedList *new_llist;
@@ -17,7 +17,7 @@ LinkedList *linked_list_new(void *head_key)
     new_llist = malloc(sizeof(LinkedList));
     if (new_node == NULL || new_llist == NULL)
     {
-        // Allocation failed.
+        /* Allocation failed. */
         return NULL;
     }
     new_llist->size = 1;
@@ -25,6 +25,25 @@ LinkedList *linked_list_new(void *head_key)
     new_llist->tail = new_node;
 
     return new_linked_list;
+}
+
+void linked_list_destruct(LinkedList *list)
+{
+    LinkedListNode *cursor;
+    LinkedListNode *prev;
+
+    /* Step through, freeing each previous. Frees tail too. */
+    cursor = list->head;
+    prev = NULL;
+    while (cursor != NULL)
+    {
+        prev = cursor;
+        cursor = cursor->next;
+
+        free(prev->key);
+        free(prev);
+    }
+    free(list);
 }
 
 void linked_list_add(LinkedList *list, void *key)
@@ -55,11 +74,9 @@ void linked_list_add_at(LinkedList *list, void *key, int i)
         return NULL;
     }
 
-    // Point cursor to the i-th node, prev to (i-1)-th node.
-    point_to_index(list, cursor, prev, i);
+    point_to_index(list, &cursor, &prev, i);
 
     // Add new_node as new i-th node.
-    // NOTE assumes that i < list.size. New node cannot be new tail.
     if (cursor == list->head)
     {
         // Adding new head. Prev is NULL.
@@ -83,7 +100,7 @@ void linked_list_remove_at(LinkedList *list, int i)
     int idx;
 
     // NOTE assumed that i is within range, no checking.
-    point_to_index(list, cursor, prev, i);
+    point_to_index(list, &cursor, &prev, i);
     remove_node(list, prev, cursor);
 }
 
@@ -144,21 +161,28 @@ static LinkedListNode *create_node(void *key)
 /**
  * Point a cursor to a lists i-th node.
  *
+ * Note the double pointers used in the arguments. This is so the function can
+ * modify the first-level pointer.
+ *
  * Every case runtime: O(n) where n is the number of nodes in the list.
  * Worst case runtime: BIG-THETA(n).
  * Best case runtime: BIG-THETA(1).
  * If:
  *   - The list is a valid linked list.
- *   - 0 <= index < list.size
+ *   - 0 <= index <= list.size
  * Then:
  *   - The cursor will point to the i-th node.
  *   - The prev will point to the (i-1)-th node, or null if cursor is the head.
+ *   - If i = list.size: then cursor will be
  */
-static void point_to_index(LinkedList *list, LinkedListNode *prev,
-                           LinkedListNode *cursor, int index)
+static void point_to_index(LinkedList *list, LinkedListNode **prev_ptr,
+                           LinkedListNode **cursor_ptr, int index)
 {
     int idx;
+    LinkedListNode *cursor;
+    LinkedListNode *prev;
 
+    /* Point cursor, prev to the correct nodes. */
     idx = 0;
     cursor = list->head;
     prev = NULL;
@@ -168,12 +192,18 @@ static void point_to_index(LinkedList *list, LinkedListNode *prev,
         cursor = cursor->next;
         idx++;
     }
+
+    /* Point what the args point to to the correct nodes. */
+    (*prev_ptr) = prev;
+    (*cursor_ptr) = cursor;
 }
 
 /**
  * Point a cursor to the first node in a list containing a key.
  *
  * A node contains a key if they both point to the same location in memory.
+ * Note the double pointers used in the arguments. This is so the function can
+ * modify the first-level pointer.
  *
  * Every case runtime: O(n) where n is the size of the list.
  * Worst case runtime: BIG-THETA(n).
@@ -186,9 +216,13 @@ static void point_to_index(LinkedList *list, LinkedListNode *prev,
  *     that contains that key and the prev will point to its previous.
  *   - If the key is not in the list, then the cursor and prev will be NULL.
  */
-static void point_to_key(LinkedList *list, LinkedListNode *prev,
-                           LinkedListNode *cursor, void *key)
+static void point_to_key(LinkedList *list, LinkedListNode **prev_ptr,
+                           LinkedListNode **cursor_ptr, void *key)
 {
+    LinkedListNode *cursor;
+    LinkedListNode *prev;
+
+    /* Point cursor, prev to the correct nodes */
     cursor = list->head;
     prev = NULL;
     while(cursor->key != key && cursor != NULL)
@@ -196,6 +230,10 @@ static void point_to_key(LinkedList *list, LinkedListNode *prev,
         prev = cursor;
         cursor = cursor->next;
     }
+
+    /* Point what the args point to to the correct nodes */
+    (*cursor_ptr) = cursor;
+    (*prev_ptr) = prev;
 }
 
 /**
