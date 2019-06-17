@@ -8,6 +8,15 @@
 
 #include "linked_list.h"
 
+static LinkedListNode *create_node(void *key);
+static void point_to_index(LinkedList *list, LinkedListNode **prev_ptr,
+                           LinkedListNode **cursor_ptr, int index);
+static void point_to_key(LinkedList *list, LinkedListNode **prev_ptr,
+                         LinkedListNode **cursor_ptr, void *key);
+static void remove_node(LinkedList *list, LinkedListNode *prev,
+                        LinkedListNode *cursor);
+
+
 LinkedList *linked_list_construct(void *head_key)
 {
     LinkedListNode *new_node;
@@ -24,7 +33,7 @@ LinkedList *linked_list_construct(void *head_key)
     new_llist->head = new_node;
     new_llist->tail = new_node;
 
-    return new_linked_list;
+    return new_llist;
 }
 
 void linked_list_destruct(LinkedList *list)
@@ -46,22 +55,24 @@ void linked_list_destruct(LinkedList *list)
     free(list);
 }
 
-void linked_list_add(LinkedList *list, void *key)
+int linked_list_add(LinkedList *list, void *key)
 {
     LinkedListNode *new_node;
 
     new_node = create_node(key);
     if (new_node == NULL)
     {
-        return NULL;
+        return 0;
     }
 
     list->tail->next = new_node;
     list->tail = new_node;
     list->size += 1;
+
+    return 1;
 }
 
-void linked_list_add_at(LinkedList *list, void *key, int i)
+int linked_list_add_at(LinkedList *list, void *key, int i)
 {
     LinkedListNode *new_node;
     LinkedListNode *cursor;
@@ -71,11 +82,10 @@ void linked_list_add_at(LinkedList *list, void *key, int i)
     new_node = create_node(key);
     if (new_node == NULL)
     {
-        return NULL;
+        return 0;
     }
 
     point_to_index(list, &cursor, &prev, i);
-
     // Add new_node as new i-th node.
     if (cursor == list->head)
     {
@@ -89,8 +99,9 @@ void linked_list_add_at(LinkedList *list, void *key, int i)
         prev->next = new_node;
         new_node->next = cursor;
     }
-
     list->size += 1;
+
+    return 1;
 }
 
 void linked_list_remove_at(LinkedList *list, int i)
@@ -104,30 +115,41 @@ void linked_list_remove_at(LinkedList *list, int i)
     remove_node(list, prev, cursor);
 }
 
-bool linked_list_remove_key(LinkedList *list, void *key)
+int linked_list_remove_key(LinkedList *list, void *key)
 {
     LinkedListNode *cursor;
     LinkedListNode *prev;
     int idx;
 
-    point_to_key(list, cursor, prev, key);
+    point_to_key(list, &cursor, &prev, key);
     if (cursor == NULL)
     {
         // NOTE null if no matching key.
-        return false;
+        return 0;
     }
     remove_node(list, prev, cursor);
-    return true;
+    return 1;
 }
 
-void linked_list_contains_key(LinkedList *list, vod *key)
+int linked_list_contains_key(LinkedList *list, void *key)
 {
     LinkedListNode *cursor;
     LinkedListNode *prev;
     int idx;
 
-    cursor = point_to_key(list, prev, cursor, key);
+    point_to_key(list, &prev, &cursor, key);
     return (cursor == NULL); // NOTE null if no matching key.
+}
+
+void *linked_list_get_key(LinkedList *list, int i)
+{
+    LinkedListNode *cursor;
+    LinkedListNode *prev;
+    int idx;
+
+    point_to_index(list, &prev, &cursor, i);
+
+    return cursor->key;
 }
 
 // === HELPER METHODS ===
@@ -186,7 +208,7 @@ static void point_to_index(LinkedList *list, LinkedListNode **prev_ptr,
     idx = 0;
     cursor = list->head;
     prev = NULL;
-    while(idx != i)
+    while(idx != index)
     {
         prev = cursor;
         cursor = cursor->next;

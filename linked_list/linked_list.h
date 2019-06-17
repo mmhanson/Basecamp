@@ -15,6 +15,8 @@
 #ifndef LINKED_LIST_H
 #define LINKED_LIST_H
 
+#include <stdlib.h> /* For malloc/NULL */
+
 
 /*
  * A generic forward-linked-list data structure.
@@ -29,18 +31,18 @@
  *
  * A LinkedList is valid if, and only if:
  *   - The key of all nodes points to the same type of data.
- *   - THe key of all nodes points to an object on the heap.
+ *   - The key of all nodes points to an object on the heap.
  *   - The next node of all nodes either points to a node or is NULL (tail).
  *   - There are no loops in the list.
  *   - The head node leads to the tail node.
  *   - The tail nodes next node is NULL.
  */
-typedef struct linked_list_node_tag
+typedef struct linked_list_node_tag LinkedListNode;
+struct linked_list_node_tag
 {
     void *key;
     LinkedListNode *next;
-} LinkedListNode;
-
+};
 typedef struct linked_list_tag
 {
     int size;
@@ -92,8 +94,12 @@ void linked_list_destruct(LinkedList *list);
  *   - The lists previous tail will point to this new node.
  *   - The lists tail will point to this new node.
  *   - The lists size will be incremented.
+ *   - A positive value is returned.
+ * Edge cases:
+ *   - If there is not enough space on the heap for a new LinkedListNode, then
+ *     zero is returned.
  */
-void linked_list_add(LinkedList *list, void *key);
+int linked_list_add(LinkedList *list, void *key);
 
 /*
  * Add an element to the i-th index of a linked list.
@@ -110,11 +116,12 @@ void linked_list_add(LinkedList *list, void *key);
  *   - This new node will be the i-th node of the list.
  *   - If a new head is added, then the lists head will be updated.
  *   - The lists size will be incremented.
+ *   - A positive value is returned.
  * Edge cases:
  *   - If there is not enough space on the heap for a new LinkedListNode, then
- *     NULL is returned.
+ *     zero is returned.
  */
-void linked_list_add_at(LinkedList *list, void *key, int i);
+int linked_list_add_at(LinkedList *list, void *key, int i);
 
 /*
  * Remove the i-th node of a linked list.
@@ -143,11 +150,11 @@ void linked_list_remove_at(LinkedList *list, int i);
  *   - The key is not NULL.
  * Then:
  *   - If the list contains the key, the first node with the matching key
- *     (comparing addresses) is removed and true is returned.
- *   - If the list doesnt contain the key, then the list is unchanged and false
+ *     (comparing addresses) is removed and a positive value is returned.
+ *   - If the list doesnt contain the key, then the list is unchanged and zero
  *     is returned.
  */
-bool linked_list_remove_key(LinkedList *list, void *key);
+int linked_list_remove_key(LinkedList *list, void *key);
 
 /*
  * Determine if a linked list contains a key.
@@ -159,10 +166,24 @@ bool linked_list_remove_key(LinkedList *list, void *key);
  *   - The list is a valid LinkedList.
  *   - The key is not NULL.
  * Then:
- *   - If the list contains the key, then true is returned.
- *   - If the list doesnt contain the key then false is returned.
+ *   - If the list contains the key, then a positive value is returned.
+ *   - If the list doesnt contain the key then zero is returned.
  */
-void linked_list_contains_key(LinkedList *list, vod *key);
+int linked_list_contains_key(LinkedList *list, void *key);
+
+/*
+ * Get the key of the i-th node of a linked list.
+ *
+ * Every case complexity: O(n) where n is the number of elements in the list.
+ * Worst case complexity: BIG-THETA(n).
+ * Best case complexity: BIG-THETA(1).
+ * If:
+ *   - The list is a valid LinkedList.
+ *   - 0 <= i < list.size
+ * Then:
+ *   - The key of the i-th node of the list is returned.
+ */
+void *linked_list_get_key(LinkedList *list, int i);
 
 
 #endif
