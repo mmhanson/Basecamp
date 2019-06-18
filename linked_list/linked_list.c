@@ -85,17 +85,23 @@ int linked_list_add_at(LinkedList *list, void *key, int i)
         return 0;
     }
 
-    point_to_index(list, &cursor, &prev, i);
-    // Add new_node as new i-th node.
+    point_to_index(list, &prev, &cursor, i);
+    /* Add new_node as new i-th node. */
     if (cursor == list->head)
     {
-        // Adding new head. Prev is NULL.
+        /* Adding new head. Prev is null. */
         new_node->next = cursor;
         list->head = new_node;
     }
+    if (prev == list->tail)
+    {
+        /* Adding a new tail. Cursor is null. */
+        prev->next = new_node;
+        list->tail = new_node;
+    }
     else
     {
-        // Adding intermediate node.
+        /* Adding intermediate node. */
         prev->next = new_node;
         new_node->next = cursor;
     }
@@ -111,7 +117,7 @@ void linked_list_remove_at(LinkedList *list, int i)
     int idx;
 
     // NOTE assumed that i is within range, no checking.
-    point_to_index(list, &cursor, &prev, i);
+    point_to_index(list, &prev, &cursor, i);
     remove_node(list, prev, cursor);
 }
 
@@ -121,7 +127,7 @@ int linked_list_remove_key(LinkedList *list, void *key)
     LinkedListNode *prev;
     int idx;
 
-    point_to_key(list, &cursor, &prev, key);
+    point_to_key(list, &prev, &cursor, key);
     if (cursor == NULL)
     {
         // NOTE null if no matching key.
@@ -195,7 +201,7 @@ static LinkedListNode *create_node(void *key)
  * Then:
  *   - The cursor will point to the i-th node.
  *   - The prev will point to the (i-1)-th node, or null if cursor is the head.
- *   - If i = list.size: then cursor will be
+ *   - If i = list.size: then cursor will be null and prev will be the tail.
  */
 static void point_to_index(LinkedList *list, LinkedListNode **prev_ptr,
                            LinkedListNode **cursor_ptr, int index)
@@ -280,7 +286,7 @@ static void remove_node(LinkedList *list, LinkedListNode *prev,
         // Removing head. Prev is NULL.
         list->head = cursor->next;
     }
-    else if (cursor = list->tail)
+    else if (cursor == list->tail)
     {
         // Removing tail.
         prev->next = NULL;

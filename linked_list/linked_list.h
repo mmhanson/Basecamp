@@ -30,12 +30,14 @@
  * will occur if this requirement is not met.
  *
  * A LinkedList is valid if, and only if:
- *   - The key of all nodes points to the same type of data.
- *   - The key of all nodes points to an object on the heap.
- *   - The next node of all nodes either points to a node or is NULL (tail).
+ *   - The key of all nodes is non-null pointer.
+ *   - The next node of all nodes points to another node, except the tail node
+ *     whose next is null.
  *   - There are no loops in the list.
  *   - The head node leads to the tail node.
- *   - The tail nodes next node is NULL.
+ * Note that these operations do not verify linked list validity, but it is
+ * guaranteed that the constructor will create a valid linked list and that
+ * each operation will leave a valid linked list valid.
  */
 typedef struct linked_list_node_tag LinkedListNode;
 struct linked_list_node_tag
