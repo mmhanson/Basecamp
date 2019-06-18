@@ -116,7 +116,7 @@ void linked_list_remove_at(LinkedList *list, int i)
     LinkedListNode *prev;
     int idx;
 
-    // NOTE assumed that i is within range, no checking.
+    /* NOTE assumed that i is within range, no checking. */
     point_to_index(list, &prev, &cursor, i);
     remove_node(list, prev, cursor);
 }
@@ -130,7 +130,7 @@ int linked_list_remove_key(LinkedList *list, void *key)
     point_to_key(list, &prev, &cursor, key);
     if (cursor == NULL)
     {
-        // NOTE null if no matching key.
+        /* NOTE null if no matching key. */
         return 0;
     }
     remove_node(list, prev, cursor);
@@ -144,7 +144,7 @@ int linked_list_contains_key(LinkedList *list, void *key)
     int idx;
 
     point_to_key(list, &prev, &cursor, key);
-    return (cursor == NULL); // NOTE null if no matching key.
+    return (cursor != NULL); /* NOTE null if no matching key. */
 }
 
 void *linked_list_get_key(LinkedList *list, int i)
@@ -158,9 +158,9 @@ void *linked_list_get_key(LinkedList *list, int i)
     return cursor->key;
 }
 
-// === HELPER METHODS ===
+/* === HELPER METHODS === */
 
-/**
+/*
  * Create a new node on the heap.
  *
  * Every case complexity: O(1).
@@ -186,7 +186,7 @@ static LinkedListNode *create_node(void *key)
     return new_node;
 }
 
-/**
+/*
  * Point a cursor to a lists i-th node.
  *
  * Note the double pointers used in the arguments. This is so the function can
@@ -226,7 +226,7 @@ static void point_to_index(LinkedList *list, LinkedListNode **prev_ptr,
     (*cursor_ptr) = cursor;
 }
 
-/**
+/*
  * Point a cursor to the first node in a list containing a key.
  *
  * A node contains a key if they both point to the same location in memory.
@@ -253,7 +253,7 @@ static void point_to_key(LinkedList *list, LinkedListNode **prev_ptr,
     /* Point cursor, prev to the correct nodes */
     cursor = list->head;
     prev = NULL;
-    while(cursor->key != key && cursor != NULL)
+    while(cursor != NULL && cursor->key != key)
     {
         prev = cursor;
         cursor = cursor->next;
@@ -264,7 +264,7 @@ static void point_to_key(LinkedList *list, LinkedListNode **prev_ptr,
     (*prev_ptr) = prev;
 }
 
-/**
+/*
  * Remove a node from a linked list.
  *
  * Every case runtime: O(1).
@@ -283,18 +283,18 @@ static void remove_node(LinkedList *list, LinkedListNode *prev,
 {
     if (cursor == list->head)
     {
-        // Removing head. Prev is NULL.
+        /* Removing head. Prev is NULL. */
         list->head = cursor->next;
     }
     else if (cursor == list->tail)
     {
-        // Removing tail.
+        /* Removing tail. */
         prev->next = NULL;
         list->tail = prev;
     }
     else
     {
-        // Removing intermediate node.
+        /* Removing intermediate node. */
         prev->next = cursor->next;
     }
     free(cursor);
