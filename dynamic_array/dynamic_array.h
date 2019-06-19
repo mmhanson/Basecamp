@@ -23,6 +23,7 @@
 DEFINE_DYNAMIC_ARRAY_STRUCT(T)  \
 DEFINE_DYNAMIC_ARRAY_CTOR(T)    \
 DEFINE_DYNAMIC_ARRAY_ADD(T)     \
+DEFINE_DYNAMIC_ARRAY_REALLOCATE(T) 
 
 /*
  * A dynamic array.
@@ -59,10 +60,9 @@ T##_DYNAMIC_ARRAY *dynamic_array_construct()                        \
 #define DEFINE_DYNAMIC_ARRAY_ADD(T)                           \
 int dynamic_array_add(T##_DYNAMIC_ARRAY *dyn_arr, T elem)     \
 {                                                             \
-    /* TODO add reallocation. Add currently fails if full. */ \
     if (dyn_arr->load_factor == 1)                            \
     {                                                         \
-        return 0;                                             \
+        reallocate(dyn_arr);                                  \
     }                                                         \
     (dyn_arr->array)[dyn_arr->size] = elem;                   \
     dyn_arr->size += 1;                                       \
@@ -70,4 +70,48 @@ int dynamic_array_add(T##_DYNAMIC_ARRAY *dyn_arr, T elem)     \
     return 1;                                                 \
 }
 
+/*
+ * Allocate a new array (double the capacity) and copy the elements over.
+ *
+ * Returns 0 if there is an error allocating the new array. Returns 1 otherwise.
+ */
+#define DEFINE_DYNAMIC_ARRAY_REALLOCATE(T)                                      \
+static int reallocate(T##_DYNAMIC_ARRAY *dyn_arr)                               \
+{                                                                               \
+    T *old_array;                                                               \
+    int idx;                                                                    \
+                                                                                \
+    old_array = dyn_arr->array;                                                 \
+    dyn_arr->array = calloc(2 * dyn_arr->capacity, sizeof(T));                  \
+    if (dyn_arr->array == NULL)                                                 \
+    {                                                                           \
+        return 0;                                                               \
+    }                                                                           \
+    for (idx = 0; idx <= dyn_arr->size; idx++)                                  \
+    {                                                                           \
+        dyn_arr->array[idx] = old_array[idx];                                   \
+    }                                                                           \
+                                                                                \
+    dyn_arr->capacity = 2 * dyn_arr->capacity;                                  \
+    dyn_arr->load_factor = ((float)dyn_arr->size) / ((float)dyn_arr->capacity); \
+                                                                                \
+    return 1;                                                                   \
+}
+
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
