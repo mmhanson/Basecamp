@@ -5,6 +5,7 @@
  * halfs in size when it is less than 30% full.
  * The genericness of this dynamic array is implemented with macros. To declare
  * and define a dynamic array and all its operations, use the 'TODO' macro.
+ * Contracts when EQUAL TO OR BELOW 0.3 load (load=size/capacity).
  *
  * The dynamic array is a struct called 'T_DYNAMIC_ARRAY'.
  *
@@ -27,6 +28,7 @@ DEFINE_DYNAMIC_ARRAY_EXPAND(T)           \
 DEFINE_DYNAMIC_ARRAY_REMOVE_FIRST(T)    \
 DEFINE_DYNAMIC_ARRAY_REMOVE(T)          \
 DEFINE_DYNAMIC_ARRAY_CONTRACT(T)        \
+DEFINE_DYNAMIC_ARRAY_REMOVE_AT(T)       \
 
 /*
  * A dynamic array.
@@ -97,6 +99,16 @@ int dynamic_array_remove_first(T##_DYNAMIC_ARRAY *dyn_arr, T elem)    \
 }
 
 /*
+ * Remove the i-th element of a dynamic array.
+ */
+#define DEFINE_DYNAMIC_ARRAY_REMOVE_AT(T)                                \
+static int dynamic_array_remove(T##_DYNAMIC_ARRAY *dyn_arr, int idx);   \
+int dynamic_array_remove_at(T##_DYNAMIC_ARRAY *dyn_arr, int i)          \
+{                                                                         \
+    return dynamic_array_remove(dyn_arr, i);                               \
+}                                                                       \
+
+/*
  * Allocate a new array (double the capacity) and copy the elements over.
  *
  * Returns 0 if there is an error allocating the new array. Returns 1 otherwise.
@@ -165,6 +177,7 @@ static int dynamic_array_expand(T##_DYNAMIC_ARRAY *dyn_arr)                     
  * Automatically contracts the array if it dips below 30% load.
  */
 // TODO zero the last element?
+// TODO update size?
 #define DEFINE_DYNAMIC_ARRAY_REMOVE(T)                       \
     static int dynamic_array_contract(T##_DYNAMIC_ARRAY *dyn_arr);      \
 static int dynamic_array_remove(T##_DYNAMIC_ARRAY *dyn_arr, int rem_idx) \
@@ -182,7 +195,8 @@ static int dynamic_array_remove(T##_DYNAMIC_ARRAY *dyn_arr, int rem_idx) \
     dyn_arr->size -= 1;                                         \
     dyn_arr->load_factor = ((float)dyn_arr->size) / ((float)dyn_arr->capacity); \
                                                                   \
-    if (dyn_arr->load_factor < 0.3)                               \
+    /* Only half if array has doubled before */                     \
+    if (dyn_arr->load_factor <= 0.3 && dyn_arr->capacity > 10)      \
     {                                                              \
         return dynamic_array_contract(dyn_arr); /* 1 if reallocation successful, 0 if not */ \
     }                                                           \

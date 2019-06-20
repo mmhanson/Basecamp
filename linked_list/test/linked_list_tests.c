@@ -402,7 +402,7 @@ void test_stress()
     TEST_ASSERT(test_validity(list) > 0);
 
     /* Add 'add_num' elements from random indexes */
-    // TODO segfault
+    // TODO segfault with too many keys
     for (idx = 0; idx < add_num; idx++)
     {
         rem_idx = rand() % list->size; /* gen rand # in [0..list->size) */

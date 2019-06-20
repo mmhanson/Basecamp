@@ -2,10 +2,14 @@
  * Tests for the dynamic array.
  */
 
+#include <stdlib.h> // for random key generation
 #include "unity.h"
 #include "../dynamic_array.h"
 
 DEFINE_DYNAMIC_ARRAY(float)
+static void expand_array(float_DYNAMIC_ARRAY *dyn_arr);
+static void contract_array(float_DYNAMIC_ARRAY *dyn_arr);
+static int calc_contracted_size(int prev_capacity);
 
 /*
  * Test adding to an array without reallocation.
@@ -47,44 +51,81 @@ void test_basic_add()
 }
 
 /*
- * Test that the array doubles and halves as expected.
+ * Test removing from the array without reallocation.
  */
-void test_reallocation()
+void test_basic_remove()
 {
-    const int init_cap = 10;
+    const int init_array_capacity = 10;
+    const int elems_to_add = 5;
     float_DYNAMIC_ARRAY *dyn_arr;
-    int capacity;
-    int added;
-    int key;
+    float *array;
+    int idx;
+    float key;
+
+    /* Add some elements to the array */
+    dyn_arr = dynamic_array_construct();
+    for (idx = 0; idx < elems_to_add; idx++)
+    {
+        key = idx + 0.5;
+        dynamic_array_add(dyn_arr, key);
+    }
+
+    /* Remove a few elements */
+    dynamic_array_remove(dyn_arr, 2);
+    dynamic_array_remove(dyn_arr, 0);
+
+    array = dyn_arr->array;
+    TEST_ASSERT_EQUAL_INT(1.5, array[0]);
+    TEST_ASSERT_EQUAL_INT(3.5, array[1]);
+    TEST_ASSERT_EQUAL_INT(4.5, array[2]);
+    TEST_ASSERT_EQUAL_INT(3, dyn_arr->size);
+}
+
+/*
+ * Test that the array expands as expected.
+ */
+void test_expansion()
+{
+    const int init_cap = 10; // initial capacity
+    const int exp_cap = init_cap * 2; // expanded capacity
+    const int dub_exp_cap = init_cap * 4; // double expanded capacity
+    float_DYNAMIC_ARRAY *dyn_arr;
 
     dyn_arr = dynamic_array_construct();
-    TEST_ASSERT_EQUAL(0, dyn_arr->size);
+
+    expand_array(dyn_arr);
+    TEST_ASSERT_EQUAL(init_cap + 1, dyn_arr->size);
+    TEST_ASSERT_EQUAL(exp_cap, dyn_arr->capacity);
+
+    expand_array(dyn_arr);
+    TEST_ASSERT_EQUAL(exp_cap + 1, dyn_arr->size);
+    TEST_ASSERT_EQUAL(dub_exp_cap, dyn_arr->capacity);
+}
+
+/*
+ * Test that the array contracts as expected.
+ */
+void test_contraction()
+{
+    const int init_cap = 10; // initial capacity
+    const int exp_expanded_cap = init_cap * 2; // expected expanded capacity
+    const int exp_dub_expanded_cap = init_cap * 4; // double expanded capacity
+    const int exp_contd_size = calc_contracted_size(exp_expanded_cap);
+    const int exp_dub_contd_size = calc_contracted_size(exp_dub_expanded_cap);
+    float_DYNAMIC_ARRAY *dyn_arr;
+
+    dyn_arr = dynamic_array_construct();
+
+    expand_array(dyn_arr);
+    contract_array(dyn_arr);
+    TEST_ASSERT_EQUAL(exp_contd_size, dyn_arr->size);
     TEST_ASSERT_EQUAL(init_cap, dyn_arr->capacity);
 
-    // Add one more than the array can hold
-    added = 0;
-    capacity = dyn_arr->capacity;
-    while (added <= capacity)
-    {
-        key = added + 0.5;
-        dynamic_array_add(dyn_arr, key);
-        added += 1;
-    }
-    TEST_ASSERT_EQUAL(init_cap + 1, dyn_arr->size);
-    TEST_ASSERT_EQUAL(2 * init_cap, dyn_arr->capacity);
-
-    // Add one more than the reallocated array can hold
-    capacity = dyn_arr->capacity;
-    while (added <= capacity)
-    {
-        key = added + 0.5;
-        dynamic_array_add(dyn_arr, key);
-        added += 1;
-    }
-    TEST_ASSERT_EQUAL((2 * init_cap) + 1, dyn_arr->size);
-    TEST_ASSERT_EQUAL(2 * 2 * init_cap, dyn_arr->capacity);
-
-    // TODO test contraction when array is below 30% load
+    expand_array(dyn_arr);
+    expand_array(dyn_arr);
+    contract_array(dyn_arr);
+    TEST_ASSERT_EQUAL(exp_dub_contd_size, dyn_arr->size);
+    TEST_ASSERT_EQUAL(exp_expanded_cap, dyn_arr->capacity);
 }
 
 /*
@@ -112,7 +153,73 @@ int main()
 {
     UNITY_BEGIN();
     RUN_TEST(test_basic_add);
-    RUN_TEST(test_reallocation);
+    RUN_TEST(test_basic_remove);
+    RUN_TEST(test_expansion);
+    RUN_TEST(test_contraction);
     RUN_TEST(test_default_values);
     UNITY_END();
 }
+
+// === HELPER METHODS ===
+
+/*
+ * Expand the array by adding one more key than it can hold.
+ *
+ * The added keys are randomly generated.
+ */
+static void expand_array(float_DYNAMIC_ARRAY *dyn_arr)
+{
+    // Fill the array up.
+    while (dyn_arr->load_factor != 1)
+    {
+        dynamic_array_add(dyn_arr, rand());
+    }
+    // Add one more.
+    dynamic_array_add(dyn_arr, rand());
+}
+
+/*
+ * Contract the array by removing the first key until it halves.
+ */
+static void contract_array(float_DYNAMIC_ARRAY *dyn_arr)
+{
+    float cap_snp; // snapshot of the capacity
+
+    cap_snp = dyn_arr->capacity;
+    // Remove first elem until capacity changes (contracts).
+    while(dyn_arr->capacity == cap_snp)
+    {
+        dynamic_array_remove_at(dyn_arr, 0);
+    }
+}
+
+/*
+ * Calculate the size of the array just after it contracts from a certain size.
+ */
+static int calc_contracted_size(int prev_capacity)
+{
+    float load_factor;
+    int size;
+
+    size = prev_capacity;
+    load_factor = ((float)size) / ((float)prev_capacity);
+    while (load_factor > 0.3000000000000) // account for precision error in load
+    {
+        size -= 1;
+        load_factor = ((float)size) / ((float)prev_capacity);
+    }
+
+    return size;
+}
+
+
+
+
+
+
+
+
+
+
+
+
