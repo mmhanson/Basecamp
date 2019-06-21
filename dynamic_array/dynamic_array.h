@@ -24,6 +24,8 @@
 DEFINE_DYNAMIC_ARRAY_STRUCT(T)          \
 DEFINE_DYNAMIC_ARRAY_CTOR(T)             \
 DEFINE_DYNAMIC_ARRAY_ADD(T)             \
+DEFINE_DYNAMIC_ARRAY_ADD_AT(T)   \
+DEFINE_DYNAMIC_ARRAY_INSERT(T)   \
 DEFINE_DYNAMIC_ARRAY_EXPAND(T)           \
 DEFINE_DYNAMIC_ARRAY_REMOVE_FIRST(T)    \
 DEFINE_DYNAMIC_ARRAY_REMOVE(T)          \
@@ -58,22 +60,65 @@ T##_DYNAMIC_ARRAY *dynamic_array_construct()                        \
 }
 
 /*
- * Add an element to the dynamic array.
+ * Add an element to the end of a dynamic array.
  *
  * Returns 0 if failure, 1 if success.
  */
 #define DEFINE_DYNAMIC_ARRAY_ADD(T)                           \
-    static int dynamic_array_expand(T##_DYNAMIC_ARRAY *dyn_arr);            \
+static int dynamic_array_insert(T##_DYNAMIC_ARRAY *dyn_arr, T elem, int i); \
 int dynamic_array_add(T##_DYNAMIC_ARRAY *dyn_arr, T elem)     \
 {                                                             \
-    if (dyn_arr->load_factor == 1)                            \
-    {                                                         \
-        dynamic_array_expand(dyn_arr);                                  \
-    }                                                         \
-    (dyn_arr->array)[dyn_arr->size] = elem;                   \
-    dyn_arr->size += 1;                                       \
+    return dynamic_array_insert(dyn_arr, elem, dyn_arr->size);             \
+}
+
+/*
+ * Add an element at the i-th index of a dynamic array.
+ *
+ * elem will be the new i-th element of the array.
+ */
+#define DEFINE_DYNAMIC_ARRAY_ADD_AT(T)                           \
+static int dynamic_array_insert(T##_DYNAMIC_ARRAY *dyn_arr, T elem, int i); \
+int dynamic_array_add_at(T##_DYNAMIC_ARRAY *dyn_arr, T elem, int i) \
+{                                                                    \
+    return dynamic_array_insert(dyn_arr, elem, i);                         \
+}
+
+/*
+ * Insert an element at the i-th index of a dynami array.
+ * Does not increment size. Automatically expands if necessary.
+ * Helper methods for add, add_at operations.
+ * Return 0 if error, positive value if success.
+ */
+#define DEFINE_DYNAMIC_ARRAY_INSERT(T)                                  \
+static int dynamic_array_expand(T##_DYNAMIC_ARRAY *dyn_arr);         \
+static int dynamic_array_insert(T##_DYNAMIC_ARRAY *dyn_arr, T elem, int i)  \
+{                                                                     \
+    int idx;                                                               \
+    int status;                                                       \
+    T *array;                                                               \
+                                                                               \
+    if (dyn_arr->load_factor == 1)                                         \
+    {                                                                    \
+        status = dynamic_array_expand(dyn_arr);                              \
+        if (status == 0)                                                    \
+        {                                                                       \
+            /* Pass allocation error up. */                                  \
+            return status;                                                  \
+        }                                                                     \
+    }                                                                       \
+                                                                             \
+    /* Move all elements in [i+1..dyn_arr->size) forward one index */       \
+    array = dyn_arr->array;                                                \
+    for (idx = dyn_arr->size; idx > i; idx--)                                \
+    {                                                                         \
+        array[idx] = array[idx - 1];                                           \
+    }                                                                         \
+                                                                              \
+    array[i] = elem;                                                          \
+    dyn_arr->size += 1;                                                      \
     dyn_arr->load_factor = ((float)dyn_arr->size) / ((float)dyn_arr->capacity); \
-    return 1;                                                 \
+                                                                              \
+    return 1;                                                               \
 }
 
 /*
@@ -114,7 +159,7 @@ int dynamic_array_remove_at(T##_DYNAMIC_ARRAY *dyn_arr, int i)          \
  * Returns 0 if there is an error allocating the new array. Returns 1 otherwise.
  */
 #define DEFINE_DYNAMIC_ARRAY_EXPAND(T)                                      \
-static int dynamic_array_expand(T##_DYNAMIC_ARRAY *dyn_arr)                               \
+static int dynamic_array_expand(T##_DYNAMIC_ARRAY *dyn_arr)                   \
 {                                                                               \
     T *old_array;                                                               \
     int new_capacity;                       \
@@ -146,7 +191,7 @@ static int dynamic_array_expand(T##_DYNAMIC_ARRAY *dyn_arr)                     
  * Note that the array must have, at most, half load or undefined behavior.
  */
 #define DEFINE_DYNAMIC_ARRAY_CONTRACT(T)                                    \
-    static int dynamic_array_contract(T##_DYNAMIC_ARRAY *dyn_arr)       \
+static int dynamic_array_contract(T##_DYNAMIC_ARRAY *dyn_arr)       \
 {                                                                          \
     T *old_array;                                                               \
     int new_capacity;                                                     \
@@ -179,7 +224,7 @@ static int dynamic_array_expand(T##_DYNAMIC_ARRAY *dyn_arr)                     
 // TODO zero the last element?
 // TODO update size?
 #define DEFINE_DYNAMIC_ARRAY_REMOVE(T)                       \
-    static int dynamic_array_contract(T##_DYNAMIC_ARRAY *dyn_arr);      \
+static int dynamic_array_contract(T##_DYNAMIC_ARRAY *dyn_arr);      \
 static int dynamic_array_remove(T##_DYNAMIC_ARRAY *dyn_arr, int rem_idx) \
 {                                                           \
     int idx;                                                 \
