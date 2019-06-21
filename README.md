@@ -1,4 +1,4 @@
-# C-Basic-Data-Structures
+# Basecamp
 RIght now this repository is a work-in-progress and this readme is more a series of notes of what I'll actually put in the readme when the repository is more developed.
 
 Basic data structures implemented from scratch in pure, old-fashioned C89.
