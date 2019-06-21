@@ -12,6 +12,8 @@ static void expand_array(float_DYNAMIC_ARRAY *dyn_arr);
 static void contract_array(float_DYNAMIC_ARRAY *dyn_arr);
 static int calc_contracted_size(int prev_capacity);
 
+// TODO move expansion/contraction points & factors to consts.
+
 /*
  * Test adding to the end of an array without reallocation.
  */
@@ -23,7 +25,7 @@ void test_basic_add()
     int idx;
     float key;
     float exp_key;
-    float exp_load_factor;
+    float exp_load;
 
     dyn_arr = dynamic_array_construct();
     for (idx = 0; idx < elems_to_add; idx++)
@@ -34,8 +36,8 @@ void test_basic_add()
 
     TEST_ASSERT_EQUAL_INT(elems_to_add, dyn_arr->size);
     TEST_ASSERT_EQUAL_INT(init_array_capacity, dyn_arr->capacity);
-    exp_load_factor = ((float)dyn_arr->size) / ((float)dyn_arr->capacity);
-    TEST_ASSERT_EQUAL_INT(exp_load_factor, dyn_arr->load_factor);
+    exp_load = ((float)dyn_arr->size) / ((float)dyn_arr->capacity);
+    TEST_ASSERT_EQUAL_INT(exp_load, dyn_arr->load);
     for (idx = 0; idx < init_array_capacity; idx++)
     {
         if (idx < elems_to_add)
@@ -122,8 +124,8 @@ void test_basic_remove()
     }
 
     /* Remove a few elements */
-    dynamic_array_remove(dyn_arr, 2);
-    dynamic_array_remove(dyn_arr, 0);
+    dynamic_array_remove_at(dyn_arr, 2);
+    dynamic_array_remove_at(dyn_arr, 0);
 
     array = dyn_arr->array;
     TEST_ASSERT_EQUAL_INT(1.5, array[0]);
@@ -187,14 +189,14 @@ void test_contains()
     TEST_ASSERT_TRUE(dynamic_array_contains(dyn_arr, 3.5));
     TEST_ASSERT_TRUE(dynamic_array_contains(dyn_arr, 9.9));
 
-    // Test that elements removed with remove_first operation are not contained.
+    // Test that elements removed with remove operation are not contained.
     dynamic_array_destruct(dyn_arr);
     dyn_arr = dynamic_array_construct(); // new array
     array = dyn_arr->array;
     dynamic_array_add_at(dyn_arr, 1.5, 3);
     dynamic_array_add(dyn_arr, 2.5);
-    dynamic_array_remove_first(dyn_arr, 2.5);
-    dynamic_array_remove_first(dyn_arr, 1.5);
+    dynamic_array_remove(dyn_arr, 2.5);
+    dynamic_array_remove(dyn_arr, 1.5);
 
     // Test that elements removed with remove_at operation are not contained.
     dynamic_array_destruct(dyn_arr);
@@ -316,7 +318,7 @@ void test_default_values()
 
     TEST_ASSERT_EQUAL_INT(0, dyn_arr->size);
     TEST_ASSERT_EQUAL_INT(10, dyn_arr->capacity);
-    TEST_ASSERT_EQUAL_INT(0, dyn_arr->load_factor);
+    TEST_ASSERT_EQUAL_INT(0, dyn_arr->load);
     TEST_ASSERT_NOT_NULL(dyn_arr->array);
     for (idx = 0; idx < array_init_capacity; idx++)
     {
@@ -347,7 +349,7 @@ int main()
  */
 static void fill_array(float_DYNAMIC_ARRAY *dyn_arr)
 {
-    while (dyn_arr->load_factor != 1)
+    while (dyn_arr->load != 1)
     {
         dynamic_array_add(dyn_arr, rand());
     }
@@ -380,32 +382,9 @@ static void contract_array(float_DYNAMIC_ARRAY *dyn_arr)
 }
 
 /*
- * Calculate the size of the array just after it contracts from a certain size.
+ * Calculate the size of the array just after it contracts from a certain capacity.
  */
 static int calc_contracted_size(int prev_capacity)
 {
-    float load_factor;
-    int size;
-
-    size = prev_capacity;
-    load_factor = ((float)size) / ((float)prev_capacity);
-    while (load_factor > 0.3000000000000) // account for precision error in load
-    {
-        size -= 1;
-        load_factor = ((float)size) / ((float)prev_capacity);
-    }
-
-    return size;
+    return (0.3 * (float)prev_capacity);
 }
-
-
-
-
-
-
-
-
-
-
-
-
