@@ -23,6 +23,7 @@
 #define DEFINE_DYNAMIC_ARRAY(T)          \
 DEFINE_DYNAMIC_ARRAY_STRUCT(T)          \
 DEFINE_DYNAMIC_ARRAY_CTOR(T)             \
+DEFINE_DYNAMIC_ARRAY_DTOR(T)             \
 DEFINE_DYNAMIC_ARRAY_ADD(T)             \
 DEFINE_DYNAMIC_ARRAY_ADD_AT(T)   \
 DEFINE_DYNAMIC_ARRAY_INSERT(T)   \
@@ -57,6 +58,16 @@ T##_DYNAMIC_ARRAY *dynamic_array_construct()                        \
     dyn_arr->load_factor = 0;                                       \
     dyn_arr->size = 0;                                              \
     dyn_arr->capacity = 10;                                         \
+}
+
+/*
+ * Free all memory associated with a dynamic array.
+ */
+#define DEFINE_DYNAMIC_ARRAY_DTOR(T)                           \
+void dynamic_array_destruct(T##_DYNAMIC_ARARY *dyn_arr)           \
+{                                                            \
+    free(dyn_arr->array);                                      \
+    free(dyn_arr);                                               \
 }
 
 /*

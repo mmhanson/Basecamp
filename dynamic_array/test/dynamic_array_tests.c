@@ -49,6 +49,8 @@ void test_basic_add()
             TEST_ASSERT_EQUAL_INT(exp_key, (dyn_arr->array)[idx]);
         }
     }
+
+    dynamic_array_destruct(dyn_arr);
 }
 
 /*
@@ -95,6 +97,8 @@ void test_basic_add_at()
     /* Verify that array didn't expand */
     TEST_ASSERT_EQUAL_INT(exp_cap, dyn_arr->capacity);
     TEST_ASSERT_EQUAL_INT(exp_size, dyn_arr->size);
+
+    dynamic_array_destruct(dyn_arr);
 }
 
 /*
@@ -126,6 +130,8 @@ void test_basic_remove()
     TEST_ASSERT_EQUAL_INT(3.5, array[1]);
     TEST_ASSERT_EQUAL_INT(4.5, array[2]);
     TEST_ASSERT_EQUAL_INT(3, dyn_arr->size);
+
+    dynamic_array_destruct(dyn_arr);
 }
 
 /*
@@ -160,6 +166,8 @@ void test_expansion()
     dynamic_array_add_at(dyn_arr, 42.5, 5);
     TEST_ASSERT_EQUAL(init_cap + 1, dyn_arr->size);
     TEST_ASSERT_EQUAL(exp_cap, dyn_arr->capacity);
+
+    dynamic_array_destruct(dyn_arr);
 }
 
 /*
@@ -186,6 +194,8 @@ void test_contraction()
     contract_array(dyn_arr);
     TEST_ASSERT_EQUAL(exp_dub_contd_size, dyn_arr->size);
     TEST_ASSERT_EQUAL(exp_expanded_cap, dyn_arr->capacity);
+
+    dynamic_array_destruct(dyn_arr);
 }
 
 /*
@@ -207,6 +217,8 @@ void test_default_values()
     {
         TEST_ASSERT_EQUAL(0.0, dyn_arr->array[idx]);
     }
+
+    dynamic_array_destruct(dyn_arr);
 }
 
 int main()
@@ -224,27 +236,24 @@ int main()
 // === HELPER METHODS ===
 
 /*
- * Expand the array by adding one more key than it can hold.
- *
- * The added keys are randomly generated.
- */
-/*
  * Fill the array with random keys.
  */
 static void fill_array(float_DYNAMIC_ARRAY *dyn_arr)
 {
-    
     while (dyn_arr->load_factor != 1)
     {
         dynamic_array_add(dyn_arr, rand());
     }
 }
 
-
+/*
+ * Expand the array by adding one more key than it can hold.
+ *
+ * The added keys are randomly generated.
+ */
 static void expand_array(float_DYNAMIC_ARRAY *dyn_arr)
 {
     fill_array(dyn_arr);
-    // Add one more.
     dynamic_array_add(dyn_arr, rand());
 }
 
