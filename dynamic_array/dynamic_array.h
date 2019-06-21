@@ -32,6 +32,7 @@ DEFINE_DYNAMIC_ARRAY_REMOVE_FIRST(T)    \
 DEFINE_DYNAMIC_ARRAY_REMOVE(T)          \
 DEFINE_DYNAMIC_ARRAY_CONTRACT(T)        \
 DEFINE_DYNAMIC_ARRAY_REMOVE_AT(T)       \
+DEFINE_DYNAMIC_ARRAY_CONTAINS(T)        \
 
 /*
  * A dynamic array.
@@ -64,7 +65,7 @@ T##_DYNAMIC_ARRAY *dynamic_array_construct()                        \
  * Free all memory associated with a dynamic array.
  */
 #define DEFINE_DYNAMIC_ARRAY_DTOR(T)                           \
-void dynamic_array_destruct(T##_DYNAMIC_ARARY *dyn_arr)           \
+void dynamic_array_destruct(T##_DYNAMIC_ARRAY *dyn_arr)    \
 {                                                            \
     free(dyn_arr->array);                                      \
     free(dyn_arr);                                               \
@@ -163,6 +164,28 @@ int dynamic_array_remove_at(T##_DYNAMIC_ARRAY *dyn_arr, int i)          \
 {                                                                         \
     return dynamic_array_remove(dyn_arr, i);                               \
 }                                                                       \
+
+/*
+ * Test if the array contains a key.
+ *
+ * Return 1 if it does, 0 if it doesnt.
+ */
+#define DEFINE_DYNAMIC_ARRAY_CONTAINS(T)                              \
+int dynamic_array_contains(T##_DYNAMIC_ARRAY *dyn_arr, T elem)        \
+{                                                                     \
+    int idx;                                                           \
+    T *array;                                                          \
+                                                                        \
+    array = dyn_arr->array;                                             \
+    for (idx = 0; idx < dyn_arr->size; idx++)                           \
+    {                                                                     \
+        if (array[idx] == elem)                                         \
+        {                                                              \
+            return 1;                                                      \
+        }                                                                 \
+    }                                                                   \
+    return 0;                                                             \
+}
 
 /*
  * Allocate a new array (double the capacity) and copy the elements over.

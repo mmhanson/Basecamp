@@ -135,6 +135,79 @@ void test_basic_remove()
 }
 
 /*
+ * Test the contains operation with array expansion.
+ */
+void test_contains()
+{
+    float_DYNAMIC_ARRAY *dyn_arr;
+    float *array;
+
+    dyn_arr = dynamic_array_construct();
+    array = dyn_arr->array;
+
+    // Test that the array contains elements just added.
+    dynamic_array_add(dyn_arr, 1.5);
+    dynamic_array_add(dyn_arr, 2.5);
+    dynamic_array_add(dyn_arr, 3.5);
+    dynamic_array_add(dyn_arr, 4.5);
+    TEST_ASSERT_TRUE(dynamic_array_contains(dyn_arr, 1.5));
+    TEST_ASSERT_TRUE(dynamic_array_contains(dyn_arr, 2.5));
+    TEST_ASSERT_TRUE(dynamic_array_contains(dyn_arr, 3.5));
+    TEST_ASSERT_TRUE(dynamic_array_contains(dyn_arr, 4.5));
+
+    // Test that the array contains added elements after expansion.
+    expand_array(dyn_arr);
+    TEST_ASSERT_TRUE(dynamic_array_contains(dyn_arr, 1.5));
+    TEST_ASSERT_TRUE(dynamic_array_contains(dyn_arr, 2.5));
+    TEST_ASSERT_TRUE(dynamic_array_contains(dyn_arr, 3.5));
+    TEST_ASSERT_TRUE(dynamic_array_contains(dyn_arr, 4.5));
+
+    // Add some more and test that it contains them.
+    dynamic_array_add(dyn_arr, 5.5);
+    dynamic_array_add(dyn_arr, 6.5);
+    TEST_ASSERT_TRUE(dynamic_array_contains(dyn_arr, 5.5));
+    TEST_ASSERT_TRUE(dynamic_array_contains(dyn_arr, 6.5));
+
+    // Test that array contains elements added with add_at.
+    dynamic_array_destruct(dyn_arr);
+    dyn_arr = dynamic_array_construct(); // new array
+    array = dyn_arr->array;
+    dynamic_array_add_at(dyn_arr, 1.5, 3);
+    dynamic_array_add_at(dyn_arr, 2.5, 3); // overlaping index
+    dynamic_array_add_at(dyn_arr, 3.5, 5);
+    TEST_ASSERT_TRUE(dynamic_array_contains(dyn_arr, 1.5));
+    TEST_ASSERT_TRUE(dynamic_array_contains(dyn_arr, 2.5));
+    TEST_ASSERT_TRUE(dynamic_array_contains(dyn_arr, 3.5));
+
+    // Test that array still contains elements after expansion with add_at.
+    fill_array(dyn_arr);
+    dynamic_array_add_at(dyn_arr, 9.9, 0);
+    TEST_ASSERT_TRUE(dynamic_array_contains(dyn_arr, 1.5));
+    TEST_ASSERT_TRUE(dynamic_array_contains(dyn_arr, 2.5));
+    TEST_ASSERT_TRUE(dynamic_array_contains(dyn_arr, 3.5));
+    TEST_ASSERT_TRUE(dynamic_array_contains(dyn_arr, 9.9));
+
+    // Test that elements removed with remove_first operation are not contained.
+    dynamic_array_destruct(dyn_arr);
+    dyn_arr = dynamic_array_construct(); // new array
+    array = dyn_arr->array;
+    dynamic_array_add_at(dyn_arr, 1.5, 3);
+    dynamic_array_add(dyn_arr, 2.5);
+    dynamic_array_remove_first(dyn_arr, 2.5);
+    dynamic_array_remove_first(dyn_arr, 1.5);
+
+    // Test that elements removed with remove_at operation are not contained.
+    dynamic_array_destruct(dyn_arr);
+    dyn_arr = dynamic_array_construct(); // new array
+    array = dyn_arr->array;
+    dynamic_array_add(dyn_arr, 2.5);
+    dynamic_array_add_at(dyn_arr, 1.5, 0);
+    dynamic_array_remove_at(dyn_arr, 0);
+    dynamic_array_remove_at(dyn_arr, 0);
+
+}
+
+/*
  * Test that the array expands as expected.
  */
 void test_expansion()
@@ -154,6 +227,7 @@ void test_expansion()
     TEST_ASSERT_EQUAL(dub_exp_cap, dyn_arr->capacity);
 
     // Verify that adding to a full array with the add operation expands it.
+    dynamic_array_destruct(dyn_arr);
     dyn_arr = dynamic_array_construct(); // new array
     fill_array(dyn_arr);
     dynamic_array_add(dyn_arr, 42.5);
@@ -161,6 +235,7 @@ void test_expansion()
     TEST_ASSERT_EQUAL(exp_cap, dyn_arr->capacity);
 
     // Verify that adding to a full array with the add_at operation expands it.
+    dynamic_array_destruct(dyn_arr);
     dyn_arr = dynamic_array_construct(); // new array
     fill_array(dyn_arr);
     dynamic_array_add_at(dyn_arr, 42.5, 5);
@@ -227,6 +302,7 @@ int main()
     RUN_TEST(test_basic_add);
     RUN_TEST(test_basic_add_at);
     RUN_TEST(test_basic_remove);
+    RUN_TEST(test_contains);
     RUN_TEST(test_expansion);
     RUN_TEST(test_contraction);
     RUN_TEST(test_default_values);
