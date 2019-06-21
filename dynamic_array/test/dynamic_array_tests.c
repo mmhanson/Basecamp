@@ -7,12 +7,13 @@
 #include "../dynamic_array.h"
 
 DEFINE_DYNAMIC_ARRAY(float)
+static void fill_array(float_DYNAMIC_ARRAY *dyn_arr);
 static void expand_array(float_DYNAMIC_ARRAY *dyn_arr);
 static void contract_array(float_DYNAMIC_ARRAY *dyn_arr);
 static int calc_contracted_size(int prev_capacity);
 
 /*
- * Test adding to an array without reallocation.
+ * Test adding to the end of an array without reallocation.
  */
 void test_basic_add()
 {
@@ -48,6 +49,52 @@ void test_basic_add()
             TEST_ASSERT_EQUAL_INT(exp_key, (dyn_arr->array)[idx]);
         }
     }
+}
+
+/*
+ * Test adding to an array without reallocation.
+ */
+void test_basic_add_at()
+{
+    const int init_array_cap = 10;
+    const int exp_cap = 10;
+    const int exp_size = 10;
+    float_DYNAMIC_ARRAY *dyn_arr;
+    float *array;
+    int idx;
+
+    dyn_arr = dynamic_array_construct();
+
+    /* Add 5 keys to the end */
+    dynamic_array_add(dyn_arr, 1.5);
+    dynamic_array_add(dyn_arr, 1.5);
+    dynamic_array_add(dyn_arr, 1.5);
+    dynamic_array_add(dyn_arr, 1.5);
+    dynamic_array_add(dyn_arr, 1.5);
+
+    /* Add 5 keys intermittently */
+    dynamic_array_add_at(dyn_arr, 2.5, 0);
+    dynamic_array_add_at(dyn_arr, 2.5, 3);
+    dynamic_array_add_at(dyn_arr, 2.5, 4);
+    dynamic_array_add_at(dyn_arr, 2.5, 6);
+    dynamic_array_add_at(dyn_arr, 2.5, 7);
+
+    /* Verify the values of the array */
+    array = dyn_arr->array;
+    TEST_ASSERT_EQUAL_INT(2.5, array[0]);
+    TEST_ASSERT_EQUAL_INT(1.5, array[1]);
+    TEST_ASSERT_EQUAL_INT(1.5, array[2]);
+    TEST_ASSERT_EQUAL_INT(2.5, array[3]);
+    TEST_ASSERT_EQUAL_INT(2.5, array[4]);
+    TEST_ASSERT_EQUAL_INT(1.5, array[5]);
+    TEST_ASSERT_EQUAL_INT(2.5, array[6]);
+    TEST_ASSERT_EQUAL_INT(2.5, array[7]);
+    TEST_ASSERT_EQUAL_INT(1.5, array[8]);
+    TEST_ASSERT_EQUAL_INT(1.5, array[9]);
+
+    /* Verify that array didn't expand */
+    TEST_ASSERT_EQUAL_INT(exp_cap, dyn_arr->capacity);
+    TEST_ASSERT_EQUAL_INT(exp_size, dyn_arr->size);
 }
 
 /*
@@ -91,15 +138,28 @@ void test_expansion()
     const int dub_exp_cap = init_cap * 4; // double expanded capacity
     float_DYNAMIC_ARRAY *dyn_arr;
 
+    // Verify that the array expands twice when over capaity.
     dyn_arr = dynamic_array_construct();
-
     expand_array(dyn_arr);
     TEST_ASSERT_EQUAL(init_cap + 1, dyn_arr->size);
     TEST_ASSERT_EQUAL(exp_cap, dyn_arr->capacity);
-
     expand_array(dyn_arr);
     TEST_ASSERT_EQUAL(exp_cap + 1, dyn_arr->size);
     TEST_ASSERT_EQUAL(dub_exp_cap, dyn_arr->capacity);
+
+    // Verify that adding to a full array with the add operation expands it.
+    dyn_arr = dynamic_array_construct(); // new array
+    fill_array(dyn_arr);
+    dynamic_array_add(dyn_arr, 42.5);
+    TEST_ASSERT_EQUAL(init_cap + 1, dyn_arr->size);
+    TEST_ASSERT_EQUAL(exp_cap, dyn_arr->capacity);
+
+    // Verify that adding to a full array with the add_at operation expands it.
+    dyn_arr = dynamic_array_construct(); // new array
+    fill_array(dyn_arr);
+    dynamic_array_add_at(dyn_arr, 42.5, 5);
+    TEST_ASSERT_EQUAL(init_cap + 1, dyn_arr->size);
+    TEST_ASSERT_EQUAL(exp_cap, dyn_arr->capacity);
 }
 
 /*
@@ -153,6 +213,7 @@ int main()
 {
     UNITY_BEGIN();
     RUN_TEST(test_basic_add);
+    RUN_TEST(test_basic_add_at);
     RUN_TEST(test_basic_remove);
     RUN_TEST(test_expansion);
     RUN_TEST(test_contraction);
@@ -167,13 +228,22 @@ int main()
  *
  * The added keys are randomly generated.
  */
-static void expand_array(float_DYNAMIC_ARRAY *dyn_arr)
+/*
+ * Fill the array with random keys.
+ */
+static void fill_array(float_DYNAMIC_ARRAY *dyn_arr)
 {
-    // Fill the array up.
+    
     while (dyn_arr->load_factor != 1)
     {
         dynamic_array_add(dyn_arr, rand());
     }
+}
+
+
+static void expand_array(float_DYNAMIC_ARRAY *dyn_arr)
+{
+    fill_array(dyn_arr);
     // Add one more.
     dynamic_array_add(dyn_arr, rand());
 }
