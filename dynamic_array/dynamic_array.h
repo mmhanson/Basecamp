@@ -126,7 +126,7 @@ static int dynamic_array_insert(T##_DYNAMIC_ARRAY *dyn_arr, T elem, int i)  \
         array[idx] = array[idx - 1];                                           \
     }                                                                         \
                                                                               \
-    array[i] = elem;                                                          \
+    array[idx] = elem;                                                          \
     dyn_arr->size += 1;                                                      \
     dyn_arr->load_factor = ((float)dyn_arr->size) / ((float)dyn_arr->capacity); \
                                                                               \
