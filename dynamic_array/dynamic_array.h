@@ -33,6 +33,7 @@ DEFINE_DYNAMIC_ARRAY_REMOVE(T)          \
 DEFINE_DYNAMIC_ARRAY_CONTRACT(T)        \
 DEFINE_DYNAMIC_ARRAY_REMOVE_AT(T)       \
 DEFINE_DYNAMIC_ARRAY_CONTAINS(T)        \
+DEFINE_DYNAMIC_ARRAY_CLEAR(T)          \
 
 /*
  * A dynamic array.
@@ -126,7 +127,7 @@ static int dynamic_array_insert(T##_DYNAMIC_ARRAY *dyn_arr, T elem, int i)  \
         array[idx] = array[idx - 1];                                           \
     }                                                                         \
                                                                               \
-    array[idx] = elem;                                                          \
+    array[idx] = elem;                                                  \
     dyn_arr->size += 1;                                                      \
     dyn_arr->load_factor = ((float)dyn_arr->size) / ((float)dyn_arr->capacity); \
                                                                               \
@@ -185,6 +186,16 @@ int dynamic_array_contains(T##_DYNAMIC_ARRAY *dyn_arr, T elem)        \
         }                                                                 \
     }                                                                   \
     return 0;                                                             \
+}
+
+/*
+ * Clear all elements from the dynamic array and reset the capacity to 10.
+ */
+#define DEFINE_DYNAMIC_ARRAY_CLEAR(T)              \
+void dynamic_array_clear(T##_DYNAMIC_ARRAY *dyn_arr)   \
+{                                                         \
+    dynamic_array_destruct(dyn_arr);                       \
+    dyn_arr = dynamic_array_construct();                     \
 }
 
 /*
