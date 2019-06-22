@@ -62,10 +62,16 @@ static const float CONTRACTION_FACTOR = 0.5;
     DEFINE_DYNAMIC_ARRAY_RECALC_LOAD(T); \
 
 /*
- * A dynamic array.
+ * A generic dynamic array.
+ *
+ * A dynamic array is valid if, and only if:
+ *   - Its size is how many elements it contains.
+ *   - Its capacity is how large the internal array is.
+ *   - Its load is its size divided by its capacity.
+ *   - All of its elements are consecutive
  */
 #define DEFINE_DYNAMIC_ARRAY_STRUCT(T); \
-    typedef struct T##_DYNAMIC_ARRAY_TAG \
+    typedef struct DynamicArrayTag_##T \
     { \
         float load; \
         int size; \
