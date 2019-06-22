@@ -1,11 +1,24 @@
 /*
  * A generic dynamic array implemented from scratch in C89.
  *
- * See consts for when array expands and contracts and by how much.
- * The genericness of this dynamic array is implemented with macros. To declare
- * and define a dynamic array and all its operations, use the 'TODO' macro.
- *
- * The dynamic array is a struct called 'T_DYNAMIC_ARRAY'.
+ * Define a dynamic array through the macro 'DEFINE_DYNAMIC_ARRAY(T);'. Put this
+ * in your code to define a dynamic array called 'DynamicArray_T' that holds
+ * type 'T'. For example: 'DEFINE_DYNAMIC_ARRAY(float);' will define a dynamic
+ * array called 'DynamicArray_float' that holds floats. This macro will also
+ * define all the dynamic array operations as well. These include:
+ *   - dynamic_array_T_construct(~)
+ *   - dynamic_array_T_destruct(~)
+ *   - dynamic_array_T_add(~)
+ *   - dynamic_array_T_add_at(~)
+ *   - dynamic_array_T_remove(~)
+ *   - dynamic_array_T_remove_at(~)
+ *   - dynamic_array_T_contains(~)
+ *   - dynamic_array_T_clear(~)
+ * Different types of Dynamic arrays can be defined in the same file. Their
+ * types and operations are differentiated by the 'T' in their names.
+ * See the macros that define these operations below for their docs.
+ * The initial capacity of the array and when it expands/contracts, and by how
+ * much, are defined in the constants below.
  *
  * Written by Max Hanson, June 2019.
  */
@@ -15,15 +28,14 @@
 
 #include <stdlib.h>
 
-// TODO all caps?
-static const int init_capacity = 10; /* Initial capacity. */
-static const float expansion_point = 1.0; /* If load >= this, array expands */
+static const int INIT_CAPACITY = 10; /* Initial capacity. */
+static const float EXPANSION_POINT = 1.0; /* If load >= this, array expands */
 /* If load <= this, array contracts */
-static const float contraction_point = 0.3;
+static const float CONTRACTION_POINT = 0.3;
 /* Expanded capacity = this * old capacity */
-static const float expansion_factor = 2.0;
+static const float EXPANSION_FACTOR = 2.0;
 /* Contracted capacity = this * old capacity */
-static const float contraction_factor = 0.5;
+static const float CONTRACTION_FACTOR = 0.5;
 
 /*
  * Macro to define a dynamic array and its operations.
@@ -70,10 +82,10 @@ static const float contraction_factor = 0.5;
     DynamicArray_##T *dynamic_array_##T##_construct() \
     { \
         DynamicArray_##T *dyn_arr = malloc(sizeof(DynamicArray_##T)); \
-        dyn_arr->array = calloc(init_capacity, sizeof(T)); \
+        dyn_arr->array = calloc(INIT_CAPACITY, sizeof(T)); \
         dyn_arr->load = 0; \
         dyn_arr->size = 0; \
-        dyn_arr->capacity = init_capacity; \
+        dyn_arr->capacity = INIT_CAPACITY; \
     }
 
 /*
@@ -192,7 +204,7 @@ static const float contraction_factor = 0.5;
         int idx; \
     \
         old_array = dyn_arr->array; \
-        new_capacity = expansion_factor * (dyn_arr->capacity);  \
+        new_capacity = EXPANSION_FACTOR * (dyn_arr->capacity);  \
         dyn_arr->array = calloc(new_capacity, sizeof(T)); \
         if (dyn_arr->array == NULL) \
         { \
@@ -224,7 +236,7 @@ static int dynamic_array_##T##_contract(DynamicArray_##T *dyn_arr) \
     int idx;                                                                    \
                                                                                 \
     old_array = dyn_arr->array;                                                 \
-    new_capacity = contraction_factor * dyn_arr->capacity;                                     \
+    new_capacity = CONTRACTION_FACTOR * dyn_arr->capacity;                                     \
     dyn_arr->array = calloc(new_capacity, sizeof(T));                           \
     if (dyn_arr->array == NULL)                                                 \
     {                                                                           \
@@ -255,7 +267,7 @@ static int dynamic_array_##T##_insert_elem(DynamicArray_##T *dyn_arr, T elem, in
     int status;                                                       \
     T *array;                                                               \
                                                                                \
-    if (dyn_arr->load == expansion_point)                                         \
+    if (dyn_arr->load == EXPANSION_POINT)                                         \
     {                                                                    \
         status = dynamic_array_##T##_expand(dyn_arr);                              \
         if (status == 0)                                                    \
@@ -303,7 +315,7 @@ static int dynamic_array_##T##_delete_elem(DynamicArray_##T *dyn_arr, int rem_id
     dynamic_array_##T##_recalc_load(dyn_arr);                                 \
                                                                   \
     /* Only half if array has doubled before */                     \
-    if (dyn_arr->load <= contraction_point && dyn_arr->capacity > 10)      \
+    if (dyn_arr->load <= CONTRACTION_POINT && dyn_arr->capacity > 10)      \
     {                                                              \
         return dynamic_array_##T##_contract(dyn_arr); /* 1 if reallocation successful, 0 if not */ \
     }                                                           \
