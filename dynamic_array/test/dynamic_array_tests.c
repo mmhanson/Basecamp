@@ -6,60 +6,38 @@
 #include "unity.h"
 #include "../dynamic_array.h"
 
-DEFINE_DYNAMIC_ARRAY(float);
-static void fill_array(DynamicArray_float *dyn_arr);
-static void expand_array(DynamicArray_float *dyn_arr);
-static void contract_array(DynamicArray_float *dyn_arr);
-static int calc_contracted_size(int prev_capacity);
-
 // Capacity after one expansion. Macro so that it can be calculated.
 #define EXPANDED_CAPACITY INIT_CAPACITY * EXPANSION_FACTOR 
 // Capacity after two expansions.
 #define DOUBLE_EXPANDED_CAPACITY EXPANDED_CAPACITY * EXPANSION_FACTOR
 
-/*
- * Test adding to the end of an array without reallocation.
- */
+DEFINE_DYNAMIC_ARRAY(float);
+static void fill_array(DynamicArray_float *dyn_arr, int count);
+static void expand_array(DynamicArray_float *dyn_arr);
+static void contract_array(DynamicArray_float *dyn_arr);
+static int calc_contracted_size(int prev_capacity);
+
+
 void test_basic_add()
 {
     const int elems_to_add = 5;
     DynamicArray_float *dyn_arr;
-    int idx;
-    float key;
+    int idx, key;
     float exp_key;
-    float exp_load;
 
     dyn_arr = dynamic_array_float_construct();
+
+    fill_array(dyn_arr, elems_to_add);
     for (idx = 0; idx < elems_to_add; idx++)
     {
-        key = idx + 0.5;
-        dynamic_array_float_add(dyn_arr, key);
-    }
-
-    TEST_ASSERT_EQUAL_INT(elems_to_add, dyn_arr->size);
-    TEST_ASSERT_EQUAL_INT(INIT_CAPACITY, dyn_arr->capacity);
-    exp_load = ((float)dyn_arr->size) / ((float)dyn_arr->capacity);
-    TEST_ASSERT_EQUAL_INT(exp_load, dyn_arr->load);
-    for (idx = 0; idx < INIT_CAPACITY; idx++)
-    {
-        if (idx < elems_to_add)
-        {
-            exp_key = idx + 0.5;
-            TEST_ASSERT_EQUAL_INT(exp_key, (dyn_arr->array)[idx]);
-        }
-        else
-        {
-            exp_key = 0.0;
-            TEST_ASSERT_EQUAL_INT(exp_key, (dyn_arr->array)[idx]);
-        }
+        exp_key = (float)idx;
+        key = (dyn_arr->array)[idx];
+        TEST_ASSERT_EQUAL(exp_key, key);
     }
 
     dynamic_array_float_destruct(dyn_arr);
 }
 
-/*
- * Test adding to an array without reallocation.
- */
 void test_basic_add_at()
 {
     DynamicArray_float *dyn_arr;
@@ -68,36 +46,18 @@ void test_basic_add_at()
 
     dyn_arr = dynamic_array_float_construct();
 
-    /* Add 5 keys to the end */
-    dynamic_array_float_add(dyn_arr, 1.5);
-    dynamic_array_float_add(dyn_arr, 1.5);
-    dynamic_array_float_add(dyn_arr, 1.5);
-    dynamic_array_float_add(dyn_arr, 1.5);
-    dynamic_array_float_add(dyn_arr, 1.5);
+    fill_array(dyn_arr, 5); // partially populate
 
-    /* Add 5 keys intermittently */
-    dynamic_array_float_add_at(dyn_arr, 2.5, 0);
-    dynamic_array_float_add_at(dyn_arr, 2.5, 3);
-    dynamic_array_float_add_at(dyn_arr, 2.5, 4);
-    dynamic_array_float_add_at(dyn_arr, 2.5, 6);
-    dynamic_array_float_add_at(dyn_arr, 2.5, 7);
+    // Add some elements 
+    dynamic_array_float_add_at(dyn_arr, 12.0, 0);
+    dynamic_array_float_add_at(dyn_arr, 12.2, 2);
+    dynamic_array_float_add_at(dyn_arr, 12.5, 5);
 
-    /* Verify the values of the array */
+    // Verify added elements
     array = dyn_arr->array;
-    TEST_ASSERT_EQUAL_INT(2.5, array[0]);
-    TEST_ASSERT_EQUAL_INT(1.5, array[1]);
-    TEST_ASSERT_EQUAL_INT(1.5, array[2]);
-    TEST_ASSERT_EQUAL_INT(2.5, array[3]);
-    TEST_ASSERT_EQUAL_INT(2.5, array[4]);
-    TEST_ASSERT_EQUAL_INT(1.5, array[5]);
-    TEST_ASSERT_EQUAL_INT(2.5, array[6]);
-    TEST_ASSERT_EQUAL_INT(2.5, array[7]);
-    TEST_ASSERT_EQUAL_INT(1.5, array[8]);
-    TEST_ASSERT_EQUAL_INT(1.5, array[9]);
-
-    /* Verify that array didn't expand */
-    TEST_ASSERT_EQUAL_INT(INIT_CAPACITY, dyn_arr->capacity);
-    TEST_ASSERT_EQUAL_INT(INIT_CAPACITY, dyn_arr->size); // full array
+    TEST_ASSERT_EQUAL_INT(12.0, array[0]);
+    TEST_ASSERT_EQUAL_INT(12.2, array[2]);
+    TEST_ASSERT_EQUAL_INT(12.5, array[5]);
 
     dynamic_array_float_destruct(dyn_arr);
 }
@@ -141,6 +101,7 @@ void test_contains()
 {
     DynamicArray_float *dyn_arr;
     float *array;
+    float key;
 
     dyn_arr = dynamic_array_float_construct();
     array = dyn_arr->array;
@@ -180,7 +141,8 @@ void test_contains()
     TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 3.5));
 
     // Test that array still contains elements after expansion with add_at.
-    fill_array(dyn_arr);
+    fill_array(dyn_arr, dyn_arr->size);
+    key = 0.0;
     dynamic_array_float_add_at(dyn_arr, 9.9, 0);
     TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 1.5));
     TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 2.5));
@@ -226,7 +188,7 @@ void test_expansion()
     // Verify that adding to a full array with the add operation expands it.
     dynamic_array_float_destruct(dyn_arr);
     dyn_arr = dynamic_array_float_construct(); // new array
-    fill_array(dyn_arr);
+    fill_array(dyn_arr, dyn_arr->size);
     dynamic_array_float_add(dyn_arr, 42.5);
     TEST_ASSERT_EQUAL(INIT_CAPACITY + 1, dyn_arr->size);
     TEST_ASSERT_EQUAL(EXPANDED_CAPACITY, dyn_arr->capacity);
@@ -234,7 +196,7 @@ void test_expansion()
     // Verify that adding to a full array with the add_at operation expands it.
     dynamic_array_float_destruct(dyn_arr);
     dyn_arr = dynamic_array_float_construct(); // new array
-    fill_array(dyn_arr);
+    fill_array(dyn_arr, dyn_arr->size);
     dynamic_array_float_add_at(dyn_arr, 42.5, 5);
     TEST_ASSERT_EQUAL(INIT_CAPACITY + 1, dyn_arr->size);
     TEST_ASSERT_EQUAL(EXPANDED_CAPACITY, dyn_arr->capacity);
@@ -290,7 +252,9 @@ void test_default_values()
 int main()
 {
     UNITY_BEGIN();
+    // Populate array without expanding and verify the elements.
     RUN_TEST(test_basic_add);
+    // Partially populate. Add elements with add_at. Verify elements.
     RUN_TEST(test_basic_add_at);
     RUN_TEST(test_basic_remove);
     RUN_TEST(test_contains);
@@ -303,14 +267,20 @@ int main()
 // === HELPER METHODS ===
 
 /*
- * Fill the array with random keys until the load is the expansion point.
+ * Fill an array with 'count' ascending keys starting at 0.
+ *
+ * For example: passing an empty array and count=10 fills the array with
+ * 0.0, 1.0, 2.0, ... , 9.0.
  */
-static void fill_array(DynamicArray_float *dyn_arr)
+static void fill_array(DynamicArray_float *dyn_arr, int count)
 {
-    // Fill to point of expansion
-    while (dyn_arr->load != EXPANSION_POINT)
+    float key;
+    int counter;
+
+    for (counter = 0; counter < count; counter++)
     {
-        dynamic_array_float_add(dyn_arr, rand());
+        key = (float)counter;
+        dynamic_array_float_add(dyn_arr, key);
     }
 }
 
@@ -321,7 +291,7 @@ static void fill_array(DynamicArray_float *dyn_arr)
  */
 static void expand_array(DynamicArray_float *dyn_arr)
 {
-    fill_array(dyn_arr);
+    fill_array(dyn_arr, dyn_arr->size);
     dynamic_array_float_add(dyn_arr, rand());
 }
 
