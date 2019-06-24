@@ -210,36 +210,6 @@ void test_contains()
 }
 
 /*
- * Test that the clear operation.
- */
-void test_clear()
-{
-    const int init_cap = 10;
-    const int exp_cap = 2 * init_cap;
-    DynamicArray_float *dyn_arr;
-
-    dyn_arr = dynamic_array_float_construct();
-
-    // Add some elements without expanding and clear. Verify array.
-    fill_array(dyn_arr);
-    TEST_ASSERT_EQUAL_INT(init_cap, dyn_arr->size);
-    TEST_ASSERT_EQUAL_INT(init_cap, dyn_arr->capacity);
-    dynamic_array_float_clear(dyn_arr);
-    TEST_ASSERT_EQUAL_INT(0, dyn_arr->size);
-    TEST_ASSERT_EQUAL_INT(init_cap, dyn_arr->capacity);
-
-    // Expand the array and clear. Verify array.
-    expand_array(dyn_arr);
-    TEST_ASSERT_EQUAL_INT(init_cap + 1, dyn_arr->size);
-    TEST_ASSERT_EQUAL_INT(exp_cap, dyn_arr->capacity);
-    dynamic_array_float_clear(dyn_arr);
-    TEST_ASSERT_EQUAL_INT(0, dyn_arr->size);
-    TEST_ASSERT_EQUAL_INT(init_cap, dyn_arr->capacity);
-
-    dynamic_array_float_destruct(dyn_arr);
-}
-
-/*
  * Test that the array expands as expected.
  */
 void test_expansion()
@@ -320,10 +290,6 @@ void test_default_values()
     TEST_ASSERT_EQUAL_INT(10, dyn_arr->capacity);
     TEST_ASSERT_EQUAL_INT(0, dyn_arr->load);
     TEST_ASSERT_NOT_NULL(dyn_arr->array);
-    for (idx = 0; idx < array_init_capacity; idx++)
-    {
-        TEST_ASSERT_EQUAL(0.0, dyn_arr->array[idx]);
-    }
 
     dynamic_array_float_destruct(dyn_arr);
 }
@@ -335,7 +301,6 @@ int main()
     RUN_TEST(test_basic_add_at);
     RUN_TEST(test_basic_remove);
     RUN_TEST(test_contains);
-    RUN_TEST(test_clear);
     RUN_TEST(test_expansion);
     RUN_TEST(test_contraction);
     RUN_TEST(test_default_values);
