@@ -12,14 +12,11 @@ static void expand_array(DynamicArray_float *dyn_arr);
 static void contract_array(DynamicArray_float *dyn_arr);
 static int calc_contracted_size(int prev_capacity);
 
-// TODO move expansion/contraction points & factors to consts.
-
 /*
  * Test adding to the end of an array without reallocation.
  */
 void test_basic_add()
 {
-    const int init_array_capacity = 10;
     const int elems_to_add = 5;
     DynamicArray_float *dyn_arr;
     int idx;
@@ -35,10 +32,10 @@ void test_basic_add()
     }
 
     TEST_ASSERT_EQUAL_INT(elems_to_add, dyn_arr->size);
-    TEST_ASSERT_EQUAL_INT(init_array_capacity, dyn_arr->capacity);
+    TEST_ASSERT_EQUAL_INT(INIT_CAPACITY, dyn_arr->capacity);
     exp_load = ((float)dyn_arr->size) / ((float)dyn_arr->capacity);
     TEST_ASSERT_EQUAL_INT(exp_load, dyn_arr->load);
-    for (idx = 0; idx < init_array_capacity; idx++)
+    for (idx = 0; idx < INIT_CAPACITY; idx++)
     {
         if (idx < elems_to_add)
         {
@@ -60,7 +57,6 @@ void test_basic_add()
  */
 void test_basic_add_at()
 {
-    const int init_array_cap = 10;
     const int exp_cap = 10;
     const int exp_size = 10;
     DynamicArray_float *dyn_arr;
@@ -108,7 +104,6 @@ void test_basic_add_at()
  */
 void test_basic_remove()
 {
-    const int init_array_capacity = 10;
     const int elems_to_add = 5;
     DynamicArray_float *dyn_arr;
     float *array;
@@ -214,15 +209,14 @@ void test_contains()
  */
 void test_expansion()
 {
-    const int init_cap = 10; // initial capacity
-    const int exp_cap = init_cap * 2; // expanded capacity
-    const int dub_exp_cap = init_cap * 4; // double expanded capacity
+    const int exp_cap = INIT_CAPACITY * 2; // expanded capacity
+    const int dub_exp_cap = INIT_CAPACITY * 4; // double expanded capacity
     DynamicArray_float *dyn_arr;
 
     // Verify that the array expands twice when over capaity.
     dyn_arr = dynamic_array_float_construct();
     expand_array(dyn_arr);
-    TEST_ASSERT_EQUAL(init_cap + 1, dyn_arr->size);
+    TEST_ASSERT_EQUAL(INIT_CAPACITY + 1, dyn_arr->size);
     TEST_ASSERT_EQUAL(exp_cap, dyn_arr->capacity);
     expand_array(dyn_arr);
     TEST_ASSERT_EQUAL(exp_cap + 1, dyn_arr->size);
@@ -233,7 +227,7 @@ void test_expansion()
     dyn_arr = dynamic_array_float_construct(); // new array
     fill_array(dyn_arr);
     dynamic_array_float_add(dyn_arr, 42.5);
-    TEST_ASSERT_EQUAL(init_cap + 1, dyn_arr->size);
+    TEST_ASSERT_EQUAL(INIT_CAPACITY + 1, dyn_arr->size);
     TEST_ASSERT_EQUAL(exp_cap, dyn_arr->capacity);
 
     // Verify that adding to a full array with the add_at operation expands it.
@@ -241,7 +235,7 @@ void test_expansion()
     dyn_arr = dynamic_array_float_construct(); // new array
     fill_array(dyn_arr);
     dynamic_array_float_add_at(dyn_arr, 42.5, 5);
-    TEST_ASSERT_EQUAL(init_cap + 1, dyn_arr->size);
+    TEST_ASSERT_EQUAL(INIT_CAPACITY + 1, dyn_arr->size);
     TEST_ASSERT_EQUAL(exp_cap, dyn_arr->capacity);
 
     dynamic_array_float_destruct(dyn_arr);
@@ -252,9 +246,8 @@ void test_expansion()
  */
 void test_contraction()
 {
-    const int init_cap = 10; // initial capacity
-    const int exp_expanded_cap = init_cap * 2; // expected expanded capacity
-    const int exp_dub_expanded_cap = init_cap * 4; // double expanded capacity
+    const int exp_expanded_cap = INIT_CAPACITY * 2; // expected expanded capacity
+    const int exp_dub_expanded_cap = INIT_CAPACITY * 4; // double expanded capacity
     const int exp_contd_size = calc_contracted_size(exp_expanded_cap);
     const int exp_dub_contd_size = calc_contracted_size(exp_dub_expanded_cap);
     DynamicArray_float *dyn_arr;
@@ -264,7 +257,7 @@ void test_contraction()
     expand_array(dyn_arr);
     contract_array(dyn_arr);
     TEST_ASSERT_EQUAL(exp_contd_size, dyn_arr->size);
-    TEST_ASSERT_EQUAL(init_cap, dyn_arr->capacity);
+    TEST_ASSERT_EQUAL(INIT_CAPACITY, dyn_arr->capacity);
 
     expand_array(dyn_arr);
     expand_array(dyn_arr);
@@ -280,14 +273,13 @@ void test_contraction()
  */
 void test_default_values()
 {
-    const int array_init_capacity = 10;
     DynamicArray_float *dyn_arr;
     int idx;
 
     dyn_arr = dynamic_array_float_construct();
 
     TEST_ASSERT_EQUAL_INT(0, dyn_arr->size);
-    TEST_ASSERT_EQUAL_INT(10, dyn_arr->capacity);
+    TEST_ASSERT_EQUAL_INT(INIT_CAPACITY, dyn_arr->capacity);
     TEST_ASSERT_EQUAL_INT(0, dyn_arr->load);
     TEST_ASSERT_NOT_NULL(dyn_arr->array);
 
