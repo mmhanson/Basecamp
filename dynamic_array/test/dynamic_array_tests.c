@@ -11,7 +11,7 @@
 // Capacity after two expansions.
 #define DOUBLE_EXPANDED_CAPACITY EXPANDED_CAPACITY * EXPANSION_FACTOR
 
-DEFINE_DYNAMIC_ARRAY(float);
+DEFINE_DYNAMIC_ARRAY(float)
 static void fill_array(DynamicArray_float *darr, int count);
 static void expand_array(DynamicArray_float *darr);
 static void almost_contract_array(DynamicArray_float *darr);

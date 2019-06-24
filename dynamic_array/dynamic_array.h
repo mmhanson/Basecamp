@@ -1,9 +1,9 @@
 /*
  * A generic dynamic array implemented from scratch in C89.
  *
- * Define a dynamic array through the macro 'DEFINE_DYNAMIC_ARRAY(T);'. Put this
+ * Define a dynamic array through the macro 'DEFINE_DYNAMIC_ARRAY(T)'. Put this
  * in your code to define a dynamic array called 'DynamicArray_T' that holds
- * type 'T'. For example: 'DEFINE_DYNAMIC_ARRAY(float);' will define a dynamic
+ * type 'T'. For example: 'DEFINE_DYNAMIC_ARRAY(float)' will define a dynamic
  * array called 'DynamicArray_float' that holds floats. This macro will also
  * define all the dynamic array operations as well. These include:
  *   - dynamic_array_T_construct(~)
@@ -41,21 +41,21 @@ static const float CONTRACTION_FACTOR = 0.5;
  * A type parameter 'T' is valid if, and only if:
  *   - It contains no spaces. Note this means pointers must be typecast.
  */
-#define DEFINE_DYNAMIC_ARRAY(T);                                                \
-    DEFINE_DYNAMIC_ARRAY_STRUCT(T);                                             \
-    DECLARE_DYNAMIC_ARRAY_HELPERS(T);                                           \
-    DEFINE_DYNAMIC_ARRAY_CTOR(T);                                               \
-    DEFINE_DYNAMIC_ARRAY_DTOR(T);                                               \
-    DEFINE_DYNAMIC_ARRAY_ADD(T);                                                \
-    DEFINE_DYNAMIC_ARRAY_ADD_AT(T);                                             \
-    DEFINE_DYNAMIC_ARRAY_REMOVE(T);                                             \
-    DEFINE_DYNAMIC_ARRAY_REMOVE_AT(T);                                          \
-    DEFINE_DYNAMIC_ARRAY_CONTAINS(T);                                           \
-    DEFINE_DYNAMIC_ARRAY_EXPAND(T);                                             \
-    DEFINE_DYNAMIC_ARRAY_CONTRACT(T);                                           \
-    DEFINE_DYNAMIC_ARRAY_INSERT_ELEM(T);                                        \
-    DEFINE_DYNAMIC_ARRAY_DELETE_ELEM(T);                                        \
-    DEFINE_DYNAMIC_ARRAY_RECALC_LOAD(T);
+#define DEFINE_DYNAMIC_ARRAY(T)                                                \
+    DEFINE_DYNAMIC_ARRAY_STRUCT(T)                                             \
+    DECLARE_DYNAMIC_ARRAY_HELPERS(T)                                           \
+    DEFINE_DYNAMIC_ARRAY_CTOR(T)                                               \
+    DEFINE_DYNAMIC_ARRAY_DTOR(T)                                               \
+    DEFINE_DYNAMIC_ARRAY_ADD(T)                                                \
+    DEFINE_DYNAMIC_ARRAY_ADD_AT(T)                                             \
+    DEFINE_DYNAMIC_ARRAY_REMOVE(T)                                             \
+    DEFINE_DYNAMIC_ARRAY_REMOVE_AT(T)                                          \
+    DEFINE_DYNAMIC_ARRAY_CONTAINS(T)                                           \
+    DEFINE_DYNAMIC_ARRAY_EXPAND(T)                                             \
+    DEFINE_DYNAMIC_ARRAY_CONTRACT(T)                                           \
+    DEFINE_DYNAMIC_ARRAY_INSERT_ELEM(T)                                        \
+    DEFINE_DYNAMIC_ARRAY_DELETE_ELEM(T)                                        \
+    DEFINE_DYNAMIC_ARRAY_RECALC_LOAD(T)
 
 /*
  * A generic dynamic array.
@@ -68,7 +68,7 @@ static const float CONTRACTION_FACTOR = 0.5;
  * The constructor is guaranteed to return a valid dynamic array and each
  * operation will keep a valid dynamic array valid.
  */
-#define DEFINE_DYNAMIC_ARRAY_STRUCT(T);                                         \
+#define DEFINE_DYNAMIC_ARRAY_STRUCT(T)                                         \
     typedef struct DynamicArrayTag_##T                                          \
     {                                                                           \
         float load;                                                             \
@@ -94,7 +94,7 @@ static const float CONTRACTION_FACTOR = 0.5;
  *   - If there is an error allocating either the internal array or the dynamic
  *     array instance, then null will be returned.
  */
-#define DEFINE_DYNAMIC_ARRAY_CTOR(T);                                           \
+#define DEFINE_DYNAMIC_ARRAY_CTOR(T)                                           \
     DynamicArray_##T *dynamic_array_##T##_construct()                           \
     {                                                                           \
         T *array;                                                               \
@@ -121,7 +121,7 @@ static const float CONTRACTION_FACTOR = 0.5;
  * Then:
  *   - All memory associated with the dynamic array will be deallocated.
  */
-#define DEFINE_DYNAMIC_ARRAY_DTOR(T);                                           \
+#define DEFINE_DYNAMIC_ARRAY_DTOR(T)                                           \
     void dynamic_array_##T##_destruct(DynamicArray_##T *self)                \
     {                                                                           \
         free(self->array);                                                   \
@@ -144,7 +144,7 @@ static const float CONTRACTION_FACTOR = 0.5;
  *   - If the array is full and reallocation fails (no more memory), then 1
  *     is returned and the array is not altered.
  */
-#define DEFINE_DYNAMIC_ARRAY_ADD(T);                                            \
+#define DEFINE_DYNAMIC_ARRAY_ADD(T)                                            \
     int dynamic_array_##T##_add(DynamicArray_##T *self, T elem)              \
     {                                                                           \
         return dynamic_array_##T##_insert_elem(self, elem, self->size);   \
@@ -167,7 +167,7 @@ static const float CONTRACTION_FACTOR = 0.5;
  *   - If the array is full and reallocation fails (no more memory), then 1
  *     is returned and the array is not altered.
  */
-#define DEFINE_DYNAMIC_ARRAY_ADD_AT(T);                                         \
+#define DEFINE_DYNAMIC_ARRAY_ADD_AT(T)                                         \
     int dynamic_array_##T##_add_at(DynamicArray_##T *self, T elem, int i)    \
     {                                                                           \
         return dynamic_array_##T##_insert_elem(self, elem, i);               \
@@ -192,7 +192,7 @@ static const float CONTRACTION_FACTOR = 0.5;
  *   - If the array is contracted and there is an error allocating the new array,
  *     then 1 is returned and the original array is not modified.
  */
-#define DEFINE_DYNAMIC_ARRAY_REMOVE(T);                                         \
+#define DEFINE_DYNAMIC_ARRAY_REMOVE(T)                                         \
     int dynamic_array_##T##_remove(DynamicArray_##T *self, T elem)           \
     {                                                                           \
         int idx;                                                                \
@@ -226,7 +226,7 @@ static const float CONTRACTION_FACTOR = 0.5;
  *   - If the array is contracted and there is an error allocating the new array,
  *     then 1 is returned and the original array is not modified.
  */
-#define DEFINE_DYNAMIC_ARRAY_REMOVE_AT(T);                                      \
+#define DEFINE_DYNAMIC_ARRAY_REMOVE_AT(T)                                      \
     int dynamic_array_##T##_remove_at(DynamicArray_##T *self, int i)         \
     {                                                                           \
         return dynamic_array_##T##_delete_elem(self, i);                     \
@@ -242,7 +242,7 @@ static const float CONTRACTION_FACTOR = 0.5;
  *   - If the array contains the element, then 1 is returned. If it does not,
  *     then 0 is returned.
  */
-#define DEFINE_DYNAMIC_ARRAY_CONTAINS(T);                                       \
+#define DEFINE_DYNAMIC_ARRAY_CONTAINS(T)                                       \
     int dynamic_array_##T##_contains(DynamicArray_##T *self, T elem)         \
     {                                                                           \
         int idx;                                                                \
@@ -262,7 +262,7 @@ static const float CONTRACTION_FACTOR = 0.5;
 /*
  * Declare signatures of helper methods.
  */
-#define DECLARE_DYNAMIC_ARRAY_HELPERS(T);                                       \
+#define DECLARE_DYNAMIC_ARRAY_HELPERS(T)                                       \
     static int dynamic_array_##T##_expand(DynamicArray_##T *self);           \
     static int dynamic_array_##T##_contract(DynamicArray_##T *self);         \
     static int dynamic_array_##T##_insert_elem(DynamicArray_##T *self,       \
@@ -289,7 +289,7 @@ static const float CONTRACTION_FACTOR = 0.5;
  *   - If there is an error allocating the new array, then 1 is returned. and
  *     the old array is not modified.
  */
-#define DEFINE_DYNAMIC_ARRAY_EXPAND(T);                                         \
+#define DEFINE_DYNAMIC_ARRAY_EXPAND(T)                                         \
     static int dynamic_array_##T##_expand(DynamicArray_##T *self)            \
     {                                                                           \
         T *new_array;                                                           \
@@ -337,7 +337,7 @@ static const float CONTRACTION_FACTOR = 0.5;
  *   - If there is an error allocating the new array, then 1 is returned and the
  *     old array is not modified.
  */
-#define DEFINE_DYNAMIC_ARRAY_CONTRACT(T);                                       \
+#define DEFINE_DYNAMIC_ARRAY_CONTRACT(T)                                       \
     static int dynamic_array_##T##_contract(DynamicArray_##T *self)          \
     {                                                                           \
         T *new_array;                                                           \
@@ -386,7 +386,7 @@ static const float CONTRACTION_FACTOR = 0.5;
  *   - If the dynamic array is full and there is an error expanding it, then 1
  *     is returned.
  */
-#define DEFINE_DYNAMIC_ARRAY_INSERT_ELEM(T);                                    \
+#define DEFINE_DYNAMIC_ARRAY_INSERT_ELEM(T)                                    \
 static int dynamic_array_##T##_insert_elem(DynamicArray_##T *self, T elem,   \
                                            int i)                               \
 {                                                                               \
@@ -437,7 +437,7 @@ static int dynamic_array_##T##_insert_elem(DynamicArray_##T *self, T elem,   \
  *   - If the array is contracted and there is an error allocating a new array,
  *     then 1 is returned.
  */
-#define DEFINE_DYNAMIC_ARRAY_DELETE_ELEM(T);                                    \
+#define DEFINE_DYNAMIC_ARRAY_DELETE_ELEM(T)                                    \
 static int dynamic_array_##T##_delete_elem(DynamicArray_##T *self,           \
                                            int i)                               \
 {                                                                               \
@@ -471,7 +471,7 @@ static int dynamic_array_##T##_delete_elem(DynamicArray_##T *self,           \
  * Then:
  *   - load will equal size divided by capacity.
  */
-#define DEFINE_DYNAMIC_ARRAY_RECALC_LOAD(T);                                    \
+#define DEFINE_DYNAMIC_ARRAY_RECALC_LOAD(T)                                    \
     static void dynamic_array_##T##_recalc_load(DynamicArray_##T *self)      \
     {                                                                           \
         self->load = ((float)self->size) / ((float)self->capacity);    \
