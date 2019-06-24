@@ -28,7 +28,7 @@
 #include <stdlib.h>
 
 static const int INIT_CAPACITY = 10; /* Initial capacity. */
-static const float EXPANSION_POINT = 1.0; /* If load >= this, array expands */
+static const float EXPANSION_POINT = 1.0; /* If load > this, array expands */
 /* If load <= this, array contracts */
 static const float CONTRACTION_POINT = 0.3;
 /* Expanded capacity = this * old capacity */

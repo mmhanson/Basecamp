@@ -12,6 +12,11 @@ static void expand_array(DynamicArray_float *dyn_arr);
 static void contract_array(DynamicArray_float *dyn_arr);
 static int calc_contracted_size(int prev_capacity);
 
+// Capacity after one expansion. Macro so that it can be calculated.
+#define EXPANDED_CAPACITY INIT_CAPACITY * EXPANSION_FACTOR 
+// Capacity after two expansions.
+#define DOUBLE_EXPANDED_CAPACITY EXPANDED_CAPACITY * EXPANSION_FACTOR
+
 /*
  * Test adding to the end of an array without reallocation.
  */
@@ -57,8 +62,6 @@ void test_basic_add()
  */
 void test_basic_add_at()
 {
-    const int exp_cap = 10;
-    const int exp_size = 10;
     DynamicArray_float *dyn_arr;
     float *array;
     int idx;
@@ -93,8 +96,8 @@ void test_basic_add_at()
     TEST_ASSERT_EQUAL_INT(1.5, array[9]);
 
     /* Verify that array didn't expand */
-    TEST_ASSERT_EQUAL_INT(exp_cap, dyn_arr->capacity);
-    TEST_ASSERT_EQUAL_INT(exp_size, dyn_arr->size);
+    TEST_ASSERT_EQUAL_INT(INIT_CAPACITY, dyn_arr->capacity);
+    TEST_ASSERT_EQUAL_INT(INIT_CAPACITY, dyn_arr->size); // full array
 
     dynamic_array_float_destruct(dyn_arr);
 }
@@ -209,18 +212,16 @@ void test_contains()
  */
 void test_expansion()
 {
-    const int exp_cap = INIT_CAPACITY * 2; // expanded capacity
-    const int dub_exp_cap = INIT_CAPACITY * 4; // double expanded capacity
     DynamicArray_float *dyn_arr;
 
-    // Verify that the array expands twice when over capaity.
+    // Verify that the array expands when over capacity twice.
     dyn_arr = dynamic_array_float_construct();
     expand_array(dyn_arr);
     TEST_ASSERT_EQUAL(INIT_CAPACITY + 1, dyn_arr->size);
-    TEST_ASSERT_EQUAL(exp_cap, dyn_arr->capacity);
+    TEST_ASSERT_EQUAL(EXPANDED_CAPACITY, dyn_arr->capacity);
     expand_array(dyn_arr);
-    TEST_ASSERT_EQUAL(exp_cap + 1, dyn_arr->size);
-    TEST_ASSERT_EQUAL(dub_exp_cap, dyn_arr->capacity);
+    TEST_ASSERT_EQUAL(EXPANDED_CAPACITY + 1, dyn_arr->size);
+    TEST_ASSERT_EQUAL(DOUBLE_EXPANDED_CAPACITY, dyn_arr->capacity);
 
     // Verify that adding to a full array with the add operation expands it.
     dynamic_array_float_destruct(dyn_arr);
@@ -228,7 +229,7 @@ void test_expansion()
     fill_array(dyn_arr);
     dynamic_array_float_add(dyn_arr, 42.5);
     TEST_ASSERT_EQUAL(INIT_CAPACITY + 1, dyn_arr->size);
-    TEST_ASSERT_EQUAL(exp_cap, dyn_arr->capacity);
+    TEST_ASSERT_EQUAL(EXPANDED_CAPACITY, dyn_arr->capacity);
 
     // Verify that adding to a full array with the add_at operation expands it.
     dynamic_array_float_destruct(dyn_arr);
@@ -236,7 +237,7 @@ void test_expansion()
     fill_array(dyn_arr);
     dynamic_array_float_add_at(dyn_arr, 42.5, 5);
     TEST_ASSERT_EQUAL(INIT_CAPACITY + 1, dyn_arr->size);
-    TEST_ASSERT_EQUAL(exp_cap, dyn_arr->capacity);
+    TEST_ASSERT_EQUAL(EXPANDED_CAPACITY, dyn_arr->capacity);
 
     dynamic_array_float_destruct(dyn_arr);
 }
@@ -246,24 +247,24 @@ void test_expansion()
  */
 void test_contraction()
 {
-    const int exp_expanded_cap = INIT_CAPACITY * 2; // expected expanded capacity
-    const int exp_dub_expanded_cap = INIT_CAPACITY * 4; // double expanded capacity
-    const int exp_contd_size = calc_contracted_size(exp_expanded_cap);
-    const int exp_dub_contd_size = calc_contracted_size(exp_dub_expanded_cap);
+    // Expected sizes of array after contracting from one and two expansions
+    const int CONTRACTED_SIZE = calc_contracted_size(EXPANDED_CAPACITY);
+    const int DOUBLE_CONTRACTED_SIZE =
+        calc_contracted_size(DOUBLE_EXPANDED_CAPACITY);
     DynamicArray_float *dyn_arr;
 
     dyn_arr = dynamic_array_float_construct();
 
     expand_array(dyn_arr);
     contract_array(dyn_arr);
-    TEST_ASSERT_EQUAL(exp_contd_size, dyn_arr->size);
+    TEST_ASSERT_EQUAL(CONTRACTED_SIZE, dyn_arr->size);
     TEST_ASSERT_EQUAL(INIT_CAPACITY, dyn_arr->capacity);
 
     expand_array(dyn_arr);
     expand_array(dyn_arr);
     contract_array(dyn_arr);
-    TEST_ASSERT_EQUAL(exp_dub_contd_size, dyn_arr->size);
-    TEST_ASSERT_EQUAL(exp_expanded_cap, dyn_arr->capacity);
+    TEST_ASSERT_EQUAL(DOUBLE_CONTRACTED_SIZE, dyn_arr->size);
+    TEST_ASSERT_EQUAL(EXPANDED_CAPACITY, dyn_arr->capacity);
 
     dynamic_array_float_destruct(dyn_arr);
 }
@@ -302,11 +303,12 @@ int main()
 // === HELPER METHODS ===
 
 /*
- * Fill the array with random keys.
+ * Fill the array with random keys until the load is the expansion point.
  */
 static void fill_array(DynamicArray_float *dyn_arr)
 {
-    while (dyn_arr->load != 1)
+    // Fill to point of expansion
+    while (dyn_arr->load != EXPANSION_POINT)
     {
         dynamic_array_float_add(dyn_arr, rand());
     }
@@ -328,11 +330,11 @@ static void expand_array(DynamicArray_float *dyn_arr)
  */
 static void contract_array(DynamicArray_float *dyn_arr)
 {
-    float cap_snp; // snapshot of the capacity
+    float capacity_snp; // snapshot of the capacity
 
-    cap_snp = dyn_arr->capacity;
-    // Remove first elem until capacity changes (contracts).
-    while(dyn_arr->capacity == cap_snp)
+    capacity_snp = dyn_arr->capacity;
+    // Remove first elem until capacity contracts.
+    while(dyn_arr->capacity == capacity_snp)
     {
         dynamic_array_float_remove_at(dyn_arr, 0);
     }
@@ -343,5 +345,5 @@ static void contract_array(DynamicArray_float *dyn_arr)
  */
 static int calc_contracted_size(int prev_capacity)
 {
-    return (0.3 * (float)prev_capacity);
+    return (CONTRACTION_POINT * (float)prev_capacity);
 }
