@@ -12,255 +12,234 @@
 #define DOUBLE_EXPANDED_CAPACITY EXPANDED_CAPACITY * EXPANSION_FACTOR
 
 DEFINE_DYNAMIC_ARRAY(float);
-static void fill_array(DynamicArray_float *dyn_arr, int count);
-static void expand_array(DynamicArray_float *dyn_arr);
-static void contract_array(DynamicArray_float *dyn_arr);
+static void fill_array(DynamicArray_float *darr, int count);
+static void expand_array(DynamicArray_float *darr);
+static void almost_contract_array(DynamicArray_float *darr);
 static int calc_contracted_size(int prev_capacity);
 
 
 void test_basic_add()
 {
     const int elems_to_add = 5;
-    DynamicArray_float *dyn_arr;
+    DynamicArray_float *darr;
     int idx, key;
     float exp_key;
 
-    dyn_arr = dynamic_array_float_construct();
+    darr = dynamic_array_float_construct();
 
-    fill_array(dyn_arr, elems_to_add);
+    fill_array(darr, elems_to_add);
     for (idx = 0; idx < elems_to_add; idx++)
     {
         exp_key = (float)idx;
-        key = (dyn_arr->array)[idx];
+        key = (darr->array)[idx];
         TEST_ASSERT_EQUAL(exp_key, key);
     }
 
-    dynamic_array_float_destruct(dyn_arr);
+    dynamic_array_float_destruct(darr);
 }
 
 void test_basic_add_at()
 {
-    DynamicArray_float *dyn_arr;
-    float *array;
-    int idx;
+    DynamicArray_float *darr;
 
-    dyn_arr = dynamic_array_float_construct();
+    darr = dynamic_array_float_construct();
 
-    fill_array(dyn_arr, 5); // partially populate
+    fill_array(darr, 5); // partially populate
 
     // Add some elements 
-    dynamic_array_float_add_at(dyn_arr, 12.0, 0);
-    dynamic_array_float_add_at(dyn_arr, 12.2, 2);
-    dynamic_array_float_add_at(dyn_arr, 12.5, 5);
+    dynamic_array_float_add_at(darr, 12.0, 0);
+    dynamic_array_float_add_at(darr, 12.2, 2);
+    dynamic_array_float_add_at(darr, 12.5, 5);
 
     // Verify added elements
-    array = dyn_arr->array;
-    TEST_ASSERT_EQUAL_INT(12.0, array[0]);
-    TEST_ASSERT_EQUAL_INT(12.2, array[2]);
-    TEST_ASSERT_EQUAL_INT(12.5, array[5]);
+    TEST_ASSERT_EQUAL_INT(12.0, (darr->array)[0]);
+    TEST_ASSERT_EQUAL_INT(12.2, (darr->array)[2]);
+    TEST_ASSERT_EQUAL_INT(12.5, (darr->array)[5]);
 
-    dynamic_array_float_destruct(dyn_arr);
+    dynamic_array_float_destruct(darr);
 }
 
-/*
- * Test removing from the array without reallocation.
- */
 void test_basic_remove()
 {
-    const int elems_to_add = 5;
-    DynamicArray_float *dyn_arr;
-    float *array;
-    int idx;
-    float key;
+    DynamicArray_float *darr;
 
-    /* Add some elements to the array */
-    dyn_arr = dynamic_array_float_construct();
-    for (idx = 0; idx < elems_to_add; idx++)
-    {
-        key = idx + 0.5;
-        dynamic_array_float_add(dyn_arr, key);
-    }
+    darr = dynamic_array_float_construct();
 
-    /* Remove a few elements */
-    dynamic_array_float_remove_at(dyn_arr, 2);
-    dynamic_array_float_remove_at(dyn_arr, 0);
+    fill_array(darr, darr->capacity); // fill up
 
-    array = dyn_arr->array;
-    TEST_ASSERT_EQUAL_INT(1.5, array[0]);
-    TEST_ASSERT_EQUAL_INT(3.5, array[1]);
-    TEST_ASSERT_EQUAL_INT(4.5, array[2]);
-    TEST_ASSERT_EQUAL_INT(3, dyn_arr->size);
+    // Remove some elements
+    dynamic_array_float_remove_at(darr, 0);
+    dynamic_array_float_remove_at(darr, 2);
+    dynamic_array_float_remove_at(darr, 5);
 
-    dynamic_array_float_destruct(dyn_arr);
+    // Array should now be: 1, 2, 4, 5, 6, 8, 9, ...
+    TEST_ASSERT_EQUAL_INT(1.0, (darr->array)[0]);
+    TEST_ASSERT_EQUAL_INT(2.0, (darr->array)[1]);
+    TEST_ASSERT_EQUAL_INT(4.0, (darr->array)[2]);
+    TEST_ASSERT_EQUAL_INT(5.0, (darr->array)[3]);
+    TEST_ASSERT_EQUAL_INT(6.0, (darr->array)[4]);
+    TEST_ASSERT_EQUAL_INT(8.0, (darr->array)[5]);
+    TEST_ASSERT_EQUAL_INT(9.0, (darr->array)[6]);
+
+    dynamic_array_float_destruct(darr);
 }
 
-/*
- * Test the contains operation with array expansion.
- */
-void test_contains()
+void test_contains_with_add()
 {
-    DynamicArray_float *dyn_arr;
-    float *array;
-    float key;
+    DynamicArray_float *darr;
 
-    dyn_arr = dynamic_array_float_construct();
-    array = dyn_arr->array;
+    darr = dynamic_array_float_construct();
 
-    // Test that the array contains elements just added.
-    dynamic_array_float_add(dyn_arr, 1.5);
-    dynamic_array_float_add(dyn_arr, 2.5);
-    dynamic_array_float_add(dyn_arr, 3.5);
-    dynamic_array_float_add(dyn_arr, 4.5);
-    TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 1.5));
-    TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 2.5));
-    TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 3.5));
-    TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 4.5));
+    dynamic_array_float_add(darr, 1.0);
+    TEST_ASSERT_TRUE(dynamic_array_float_contains(darr, 1.0));
 
-    // Test that the array contains added elements after expansion.
-    expand_array(dyn_arr);
-    TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 1.5));
-    TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 2.5));
-    TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 3.5));
-    TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 4.5));
-
-    // Add some more and test that it contains them.
-    dynamic_array_float_add(dyn_arr, 5.5);
-    dynamic_array_float_add(dyn_arr, 6.5);
-    TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 5.5));
-    TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 6.5));
-
-    // Test that array contains elements added with add_at.
-    dynamic_array_float_destruct(dyn_arr);
-    dyn_arr = dynamic_array_float_construct(); // new array
-    array = dyn_arr->array;
-    dynamic_array_float_add_at(dyn_arr, 1.5, 3);
-    dynamic_array_float_add_at(dyn_arr, 2.5, 3); // overlaping index
-    dynamic_array_float_add_at(dyn_arr, 3.5, 5);
-    TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 1.5));
-    TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 2.5));
-    TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 3.5));
-
-    // Test that array still contains elements after expansion with add_at.
-    fill_array(dyn_arr, dyn_arr->size);
-    key = 0.0;
-    dynamic_array_float_add_at(dyn_arr, 9.9, 0);
-    TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 1.5));
-    TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 2.5));
-    TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 3.5));
-    TEST_ASSERT_TRUE(dynamic_array_float_contains(dyn_arr, 9.9));
-
-    // Test that elements removed with remove operation are not contained.
-    dynamic_array_float_destruct(dyn_arr);
-    dyn_arr = dynamic_array_float_construct(); // new array
-    array = dyn_arr->array;
-    dynamic_array_float_add_at(dyn_arr, 1.5, 3);
-    dynamic_array_float_add(dyn_arr, 2.5);
-    dynamic_array_float_remove(dyn_arr, 2.5);
-    dynamic_array_float_remove(dyn_arr, 1.5);
-
-    // Test that elements removed with remove_at operation are not contained.
-    dynamic_array_float_destruct(dyn_arr);
-    dyn_arr = dynamic_array_float_construct(); // new array
-    array = dyn_arr->array;
-    dynamic_array_float_add(dyn_arr, 2.5);
-    dynamic_array_float_add_at(dyn_arr, 1.5, 0);
-    dynamic_array_float_remove_at(dyn_arr, 0);
-    dynamic_array_float_remove_at(dyn_arr, 0);
-
+    dynamic_array_float_destruct(darr);
 }
 
-/*
- * Test that the array expands as expected.
- */
-void test_expansion()
+void test_contains_with_add_at()
 {
-    DynamicArray_float *dyn_arr;
+    DynamicArray_float *darr;
 
-    // Verify that the array expands when over capacity twice.
-    dyn_arr = dynamic_array_float_construct();
-    expand_array(dyn_arr);
-    TEST_ASSERT_EQUAL(INIT_CAPACITY + 1, dyn_arr->size);
-    TEST_ASSERT_EQUAL(EXPANDED_CAPACITY, dyn_arr->capacity);
-    expand_array(dyn_arr);
-    TEST_ASSERT_EQUAL(EXPANDED_CAPACITY + 1, dyn_arr->size);
-    TEST_ASSERT_EQUAL(DOUBLE_EXPANDED_CAPACITY, dyn_arr->capacity);
+    darr = dynamic_array_float_construct();
 
-    // Verify that adding to a full array with the add operation expands it.
-    dynamic_array_float_destruct(dyn_arr);
-    dyn_arr = dynamic_array_float_construct(); // new array
-    fill_array(dyn_arr, dyn_arr->size);
-    dynamic_array_float_add(dyn_arr, 42.5);
-    TEST_ASSERT_EQUAL(INIT_CAPACITY + 1, dyn_arr->size);
-    TEST_ASSERT_EQUAL(EXPANDED_CAPACITY, dyn_arr->capacity);
+    dynamic_array_float_add_at(darr, 1.0, 0);
+    TEST_ASSERT_TRUE(dynamic_array_float_contains(darr, 1.0));
 
-    // Verify that adding to a full array with the add_at operation expands it.
-    dynamic_array_float_destruct(dyn_arr);
-    dyn_arr = dynamic_array_float_construct(); // new array
-    fill_array(dyn_arr, dyn_arr->size);
-    dynamic_array_float_add_at(dyn_arr, 42.5, 5);
-    TEST_ASSERT_EQUAL(INIT_CAPACITY + 1, dyn_arr->size);
-    TEST_ASSERT_EQUAL(EXPANDED_CAPACITY, dyn_arr->capacity);
-
-    dynamic_array_float_destruct(dyn_arr);
+    dynamic_array_float_destruct(darr);
 }
 
-/*
- * Test that the array contracts as expected.
- */
-void test_contraction()
+void test_contains_with_remove()
 {
-    // Expected sizes of array after contracting from one and two expansions
+    DynamicArray_float *darr;
+
+    darr = dynamic_array_float_construct();
+
+    fill_array(darr, darr->capacity);
+    dynamic_array_float_remove(darr, 3.0);
+    TEST_ASSERT_FALSE(dynamic_array_float_contains(darr, 3.0));
+
+    dynamic_array_float_destruct(darr);
+}
+
+void test_contains_with_remove_at()
+{
+    DynamicArray_float *darr;
+
+    darr = dynamic_array_float_construct();
+
+
+    fill_array(darr, darr->capacity);
+    dynamic_array_float_remove_at(darr, 4);
+    TEST_ASSERT_FALSE(dynamic_array_float_contains(darr, 4.0));
+
+    dynamic_array_float_destruct(darr);
+}
+
+void test_expansion_with_add()
+{
+    DynamicArray_float *darr;
+
+    darr = dynamic_array_float_construct();
+
+    fill_array(darr, darr->capacity);
+    dynamic_array_float_add(darr, 42.0);
+    TEST_ASSERT_EQUAL_INT(EXPANDED_CAPACITY, darr->capacity);
+    TEST_ASSERT_EQUAL_INT(INIT_CAPACITY + 1, darr->size);
+
+    dynamic_array_float_destruct(darr);
+}
+
+void test_expansion_with_add_at()
+{
+    DynamicArray_float *darr;
+
+    darr = dynamic_array_float_construct();
+
+    fill_array(darr, darr->capacity);
+    dynamic_array_float_add_at(darr, 42.0, 3);
+    TEST_ASSERT_EQUAL_INT(EXPANDED_CAPACITY, darr->capacity);
+    TEST_ASSERT_EQUAL_INT(INIT_CAPACITY + 1, darr->size);
+
+    dynamic_array_float_destruct(darr);
+}
+
+void test_contraction_with_remove()
+{
     const int CONTRACTED_SIZE = calc_contracted_size(EXPANDED_CAPACITY);
-    const int DOUBLE_CONTRACTED_SIZE =
-        calc_contracted_size(DOUBLE_EXPANDED_CAPACITY);
-    DynamicArray_float *dyn_arr;
+    DynamicArray_float *darr;
 
-    dyn_arr = dynamic_array_float_construct();
+    darr = dynamic_array_float_construct();
 
-    expand_array(dyn_arr);
-    contract_array(dyn_arr);
-    TEST_ASSERT_EQUAL(CONTRACTED_SIZE, dyn_arr->size);
-    TEST_ASSERT_EQUAL(INIT_CAPACITY, dyn_arr->capacity);
+    expand_array(darr);
+    almost_contract_array(darr);
+    dynamic_array_float_remove(darr, (darr->array)[3]); // remove elem @ idx 3
 
-    expand_array(dyn_arr);
-    expand_array(dyn_arr);
-    contract_array(dyn_arr);
-    TEST_ASSERT_EQUAL(DOUBLE_CONTRACTED_SIZE, dyn_arr->size);
-    TEST_ASSERT_EQUAL(EXPANDED_CAPACITY, dyn_arr->capacity);
+    TEST_ASSERT_EQUAL(CONTRACTED_SIZE, darr->size);
+    TEST_ASSERT_EQUAL(INIT_CAPACITY, darr->capacity);
 
-    dynamic_array_float_destruct(dyn_arr);
+    dynamic_array_float_destruct(darr);
 }
 
-/*
- * Test the default values of a dynamic arrays members after construction.
- */
+void test_contraction_with_remove_at()
+{
+    const int CONTRACTED_SIZE = calc_contracted_size(EXPANDED_CAPACITY);
+    DynamicArray_float *darr;
+
+    darr = dynamic_array_float_construct();
+
+    expand_array(darr);
+    almost_contract_array(darr);
+    dynamic_array_float_remove_at(darr, 3); // remove elem @ idx 3
+
+    TEST_ASSERT_EQUAL(CONTRACTED_SIZE, darr->size);
+    TEST_ASSERT_EQUAL(INIT_CAPACITY, darr->capacity);
+
+    dynamic_array_float_destruct(darr);
+}
+
 void test_default_values()
 {
-    DynamicArray_float *dyn_arr;
-    int idx;
+    DynamicArray_float *darr;
 
-    dyn_arr = dynamic_array_float_construct();
+    darr = dynamic_array_float_construct();
 
-    TEST_ASSERT_EQUAL_INT(0, dyn_arr->size);
-    TEST_ASSERT_EQUAL_INT(INIT_CAPACITY, dyn_arr->capacity);
-    TEST_ASSERT_EQUAL_INT(0, dyn_arr->load);
-    TEST_ASSERT_NOT_NULL(dyn_arr->array);
+    TEST_ASSERT_EQUAL_INT(0, darr->size);
+    TEST_ASSERT_EQUAL_INT(INIT_CAPACITY, darr->capacity);
+    TEST_ASSERT_EQUAL_INT(0, darr->load);
+    TEST_ASSERT_NOT_NULL(darr->array);
 
-    dynamic_array_float_destruct(dyn_arr);
+    dynamic_array_float_destruct(darr);
 }
 
 int main()
 {
     UNITY_BEGIN();
-    // Populate array without expanding and verify the elements.
+
+    // Populate array and verify the added elements.
     RUN_TEST(test_basic_add);
-    // Partially populate. Add elements with add_at. Verify elements.
+    // Populate. Add elements with add_at and verify added elements.
     RUN_TEST(test_basic_add_at);
+    // Populate. Remove a few elements. Verify all elements.
     RUN_TEST(test_basic_remove);
-    RUN_TEST(test_contains);
-    RUN_TEST(test_expansion);
-    RUN_TEST(test_contraction);
+    // Add an element with add. Verify it is contained.
+    RUN_TEST(test_contains_with_add);
+    // Add an element with add_at. Verify it is contained.
+    RUN_TEST(test_contains_with_add_at);
+    // Remove an element with remove. Veify it is not contained.
+    RUN_TEST(test_contains_with_remove);
+    // Remove an element with remove_at. Veify it is not contained.
+    RUN_TEST(test_contains_with_remove_at);
+    // Fill the array. Add one more with add. Verify expansion.
+    RUN_TEST(test_expansion_with_add);
+    // Fill the array. Add one more with add. Verify expansion.
+    RUN_TEST(test_expansion_with_add_at);
+    // Expand & almost contract array. Remove an elem with remove. Verify.
+    RUN_TEST(test_contraction_with_remove);
+    // Expand & almost contract array. Remove an elem with remove_at. Verify.
+    RUN_TEST(test_contraction_with_remove_at);
+    // Construct an array. Verify default values.
     RUN_TEST(test_default_values);
+
     UNITY_END();
 }
 
@@ -272,7 +251,7 @@ int main()
  * For example: passing an empty array and count=10 fills the array with
  * 0.0, 1.0, 2.0, ... , 9.0.
  */
-static void fill_array(DynamicArray_float *dyn_arr, int count)
+static void fill_array(DynamicArray_float *darr, int count)
 {
     float key;
     int counter;
@@ -280,7 +259,7 @@ static void fill_array(DynamicArray_float *dyn_arr, int count)
     for (counter = 0; counter < count; counter++)
     {
         key = (float)counter;
-        dynamic_array_float_add(dyn_arr, key);
+        dynamic_array_float_add(darr, key);
     }
 }
 
@@ -289,24 +268,24 @@ static void fill_array(DynamicArray_float *dyn_arr, int count)
  *
  * The added keys are randomly generated.
  */
-static void expand_array(DynamicArray_float *dyn_arr)
+static void expand_array(DynamicArray_float *darr)
 {
-    fill_array(dyn_arr, dyn_arr->size);
-    dynamic_array_float_add(dyn_arr, rand());
+    fill_array(darr, darr->capacity);
+    dynamic_array_float_add(darr, rand());
 }
 
 /*
- * Contract the array by removing the first key until it halves.
+ * Remove the first element until removing one more element will contract it.
  */
-static void contract_array(DynamicArray_float *dyn_arr)
+static void almost_contract_array(DynamicArray_float *darr)
 {
-    float capacity_snp; // snapshot of the capacity
+    float next_load; // what load will be if one elem is removed
 
-    capacity_snp = dyn_arr->capacity;
-    // Remove first elem until capacity contracts.
-    while(dyn_arr->capacity == capacity_snp)
+    next_load = (float)(darr->size - 1) / (float)(darr->capacity);
+    while (next_load >= CONTRACTION_POINT)
     {
-        dynamic_array_float_remove_at(dyn_arr, 0);
+        dynamic_array_float_remove_at(darr, 0);
+        next_load = (float)(darr->size - 1) / (float)(darr->capacity);
     }
 }
 
