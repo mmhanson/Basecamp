@@ -110,6 +110,8 @@ static const float CONTRACTION_FACTOR = 0.5;
         self->capacity = INIT_CAPACITY;                                      \
         self->size = 0;                                                      \
         self->load = 0;                                                      \
+                                                                                \
+    return self;                                                                \
     }
 
 /*
@@ -395,10 +397,10 @@ static int dynamic_array_##T##_insert_elem(DynamicArray_##T *self, T elem,   \
     T *array;                                                                   \
                                                                                 \
     /* Expand if needed. */                                                     \
-    if (self->load == EXPANSION_POINT)                                       \
+    if (self->load >= EXPANSION_POINT)                                  \
     {                                                                           \
         status = dynamic_array_##T##_expand(self);                           \
-        if (status > 1)                                                         \
+        if (status > 0)                                                         \
         {                                                                       \
             return status; /* pass allocation error code up */                  \
         }                                                                       \
