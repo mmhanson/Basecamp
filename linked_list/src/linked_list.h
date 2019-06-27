@@ -169,7 +169,7 @@ static void list_replace(ListNode *old_node, ListNode *new_node)
     {
         old_node->prev->next = new_node;
     }
-    if (old-node->next != 0)
+    if (old_node->next != 0)
     {
         old_node->next->prev = new_node;
     }
