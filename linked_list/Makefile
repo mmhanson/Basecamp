@@ -10,9 +10,10 @@
 clean:
 	rm -rf obj/*
 	rm -rf tests
+	rm -rf example
 
-tests: obj/linked_list.o obj/linked_list_tests.o obj/unity.o
-	gcc -g -o tests obj/linked_list.o obj/linked_list_tests.o obj/unity.o
+tests: obj/linked_list_tests.o obj/unity.o
+	gcc -g -o tests obj/linked_list_tests.o obj/unity.o
 
 example: obj/linked_list_example.o
 	gcc -o example obj/linked_list_example.o

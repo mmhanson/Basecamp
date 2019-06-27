@@ -69,6 +69,10 @@ int main(int argc, char *argv[])
                cursor_container->number,
                cursor_container->stock);
     }
+
+    free(part_a);
+    free(part_b);
+    free(part_c);
 }
 
 /*
