@@ -279,12 +279,94 @@ void test_remove_mid_node()
     TEST_ASSERT_EQUAL(3, tail->dummy_mem);
 }
 
+void test_replace_head()
+{
+    ContainerStruct *head, *midd, *tail, *to_add;
+
+    head = malloc(sizeof(ContainerStruct));
+    midd = malloc(sizeof(ContainerStruct));
+    tail = malloc(sizeof(ContainerStruct));
+    to_add = malloc(sizeof(ContainerStruct));
+    head->dummy_mem = 1;
+    midd->dummy_mem = 2;
+    tail->dummy_mem = 3;
+    to_add->dummy_mem = 4;
+    list_init(&head->node, head);
+    list_add_after(&head->node, &midd->node, midd);
+    list_add_after(&midd->node, &tail->node, tail);
+
+    list_replace(&head->node, &to_add->node);
+    // List should go: to_add <-> midd <-> tail
+
+    // Test links in chain.
+    TEST_ASSERT_EQUAL(0, to_add->node.prev);
+    TEST_ASSERT_EQUAL(0, tail->node.next);
+    TEST_ASSERT_EQUAL(&midd->node, to_add->node.next);
+    TEST_ASSERT_EQUAL(&to_add->node, midd->node.next);
+    TEST_ASSERT_EQUAL(&tail->node, midd->node.next);
+    TEST_ASSERT_EQUAL(&midd->node, tail->node.prev);
+
+    // Test head is now unlinked from chain.
+    TEST_ASSERT_EQUAL(0, head->node.next);
+    TEST_ASSERT_EQUAL(0, head->node.prev);
+
+    // Test members unmodified.
+    TEST_ASSERT_EQUAL(1, head->dummy_mem);
+    TEST_ASSERT_EQUAL(2, midd->dummy_mem);
+    TEST_ASSERT_EQUAL(3, tail->dummy_mem);
+    TEST_ASSERT_EQUAL(4, to_add->dummy_mem);
+}
+
+void test_replace_tail()
+{
+    ContainerStruct *head, *midd, *tail, *to_add;
+
+    head = malloc(sizeof(ContainerStruct));
+    midd = malloc(sizeof(ContainerStruct));
+    tail = malloc(sizeof(ContainerStruct));
+    to_add = malloc(sizeof(ContainerStruct));
+    head->dummy_mem = 1;
+    midd->dummy_mem = 2;
+    tail->dummy_mem = 3;
+    to_add->dummy_mem = 4;
+    list_init(&head->node, head);
+    list_add_after(&head->node, &midd->node, midd);
+    list_add_after(&midd->node, &tail->node, tail);
+
+    list_replace(&tail->node, &to_add->node);
+    // List should go: head <-> midd <-> to_add 
+
+    // Test links in chain.
+    TEST_ASSERT_EQUAL(0, to_add->node.prev);
+    TEST_ASSERT_EQUAL(0, tail->node.next);
+    TEST_ASSERT_EQUAL(&midd->node, to_add->node.next);
+    TEST_ASSERT_EQUAL(&to_add->node, midd->node.next);
+    TEST_ASSERT_EQUAL(&tail->node, midd->node.next);
+    TEST_ASSERT_EQUAL(&midd->node, tail->node.prev);
+
+    // Test head is now unlinked from chain.
+    TEST_ASSERT_EQUAL(0, head->node.next);
+    TEST_ASSERT_EQUAL(0, head->node.prev);
+
+    // Test members unmodified.
+    TEST_ASSERT_EQUAL(1, head->dummy_mem);
+    TEST_ASSERT_EQUAL(2, midd->dummy_mem);
+    TEST_ASSERT_EQUAL(3, tail->dummy_mem);
+    TEST_ASSERT_EQUAL(4, to_add->dummy_mem);
+}
+
+void test_replace_mid_node()
+{
+    
+}
+
 int main()
 {
     UNITY_BEGIN();
 
     // Verify default values after initializing a list of one.
     RUN_TEST(test_default_values);
+
     // Link after list of one. Verify links. Verify containers unmodified.
     RUN_TEST(test_add_after_last_node);
     // Link struct in middle of list of three. Verify links.
@@ -293,14 +375,22 @@ int main()
     RUN_TEST(test_add_before_first_node);
     // Link struct in middle of list of three. Verify links.
     RUN_TEST(test_add_before_mid_node);
+
     // Remove a node in a list of one. Verify nothing happened.
     RUN_TEST(test_remove_list_of_one);
     // Remove the head of a list. Verify links. Verify containers unmodified.
     RUN_TEST(test_remove_head);
-    // Remvoe the tail of a list. Verify links. Verify containers unmodified.
+    // Remove the tail of a list. Verify links. Verify containers unmodified.
     RUN_TEST(test_remove_tail);
     // Remove from middle of a list. Verify links. Verify containers unmodified.
     RUN_TEST(test_remove_mid_node);
+
+    // Replace the head of a list. Verify links and containers unmodified.
+    RUN_TEST(test_replace_head);
+    // Replace the tail of a list. Verify links and containers unmodified.
+    RUN_TEST(test_replace_tail);
+    // Replace at the middle of a list. Verify links and containers unmodified.
+    RUN_TEST(test_replace_mid_node);
 
     UNITY_END();
 }

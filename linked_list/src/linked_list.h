@@ -7,7 +7,7 @@
  * linked together by embedding a ListNode in the struct and managing the
  * instances with the operations below. The @container pointer in each node is
  * meant to point to the struct containing the node. This way it is easy to go
- * from a node to its containing struct. The diagram below should how three
+ * from a node to its containing struct. The diagram below shows how three
  * structs (A, B, C) could be linked together.
  *
  *     A           B           C      
