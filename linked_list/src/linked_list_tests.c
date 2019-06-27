@@ -171,11 +171,11 @@ int main()
 
     // Verify default values after initializing a list of one.
     RUN_TEST(test_default_values);
-    // Link struct after list of one. Verify links. Verify containers unmodified
+    // Link after list of one. Verify links. Verify containers unmodified.
     RUN_TEST(test_add_after_last_node);
     // Link struct in middle of list of three. Verify links.
     RUN_TEST(test_add_after_mid_node);
-    // Link struct before list of one. Verify links. Verify containers unmodified
+    // Link before list of one. Verify links. Verify containers unmodified.
     RUN_TEST(test_add_before_first_node);
     // Link struct in middle of list of three. Verify links.
     RUN_TEST(test_add_before_mid_node);

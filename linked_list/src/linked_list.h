@@ -117,14 +117,38 @@ static void list_add_before(ListNode *node, ListNode *new_node,
  * Remove (unlink) @node from the list.
  * O(1) complexity. Caution! @node will not be deallocated.
  *
- * @node: The node to be removed from the list.
+ * @node: The node to be removed from the list. Next, prev members will both be
+ *        null. If this is a list of one (both prev, next ptrs are null), then
+ *        nothing is done.
  */
 static void list_remove(ListNode *node)
 {
-    node->prev->next = node->next;
-    node->next->prev = node->prev;
-    node->next = 0;
-    node->prev = 0;
+    if (node->next == 0 && node->prev == 0)
+    {
+        /* This is a list of one, cannot remove. */
+        return;
+    }
+
+    if (node->next == 0)
+    {
+        /* Node is tail. */
+        node->prev->next = 0;
+        node->prev = 0;
+    }
+    else if (node->prev == 0)
+    {
+        /* Node is head. */
+        node->next->prev = 0;
+        node->next = 0;
+    }
+    else
+    {
+        /* Node is intermediate element. */
+        node->prev->next = node->next;
+        node->next->prev = node->prev;
+        node->next = 0;
+        node->prev = 0;
+    }
 }
 
 /*
@@ -140,38 +164,17 @@ static void list_replace(ListNode *old_node, ListNode *new_node)
     new_node->next = old_node->next;
     new_node->prev = old_node->prev;
 
-    /* Unlink old node. */
-    old_node->prev->next = new_node;
-    old_node->next->prev = new_node;
+    /* Unlink old node. Check if old_node is head or tail. */
+    if (old_node->prev != 0)
+    {
+        old_node->prev->next = new_node;
+    }
+    if (old-node->next != 0)
+    {
+        old_node->next->prev = new_node;
+    }
     old_node->next = 0;
     old_node->prev = 0;
-}
-
-/*
- * Swap @node_a and @node_b in the list.
- * O(1) complexity.
- *
- * @node_a: Will take @node_b's previous position in the list.
- * @node_b: Will take @node_a's previous position in the list.
- */
-static void list_swap(ListNode *node_a, ListNode *node_b)
-{
-    ListNode *tmp_prev;
-    ListNode *tmp_next;
-
-    /* Put @node_b in @node_a's spot. */
-    tmp_next = node_b->next; /* to put a in b's spot */
-    tmp_prev = node_b->prev;
-    node_b->prev = node_a->prev;
-    node_b->next = node_a->next;
-    node_b->next->prev = node_b;
-    node_b->prev->next = node_b;
-
-    /* Put @node_a in @node_b's spot. */
-    node_a->next = tmp_next;
-    node_a->prev = tmp_prev;
-    node_a->next->prev = node_a;
-    node_a->prev->next = node_a;
 }
 
 /*
