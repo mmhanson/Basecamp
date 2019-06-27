@@ -1,5 +1,8 @@
 /*
  * Tests for the dynamic array.
+ *
+ * Written by Max Hanson, June 2019.
+ * Licensed under MIT. See LICENSE.txt for more details.
  */
 
 #include <stdlib.h> // for random key generation

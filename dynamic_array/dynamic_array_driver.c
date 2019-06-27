@@ -1,5 +1,8 @@
 /*
  * A basic client for the dynamic array to test compiling it in C89.
+ *
+ * Written by Max Hanson, June 2019.
+ * Licensed under MIT. See LICENSE.txt for more details.
  */
 
 #include <stdio.h>
