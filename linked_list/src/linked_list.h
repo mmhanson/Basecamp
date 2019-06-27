@@ -2,9 +2,9 @@
  * A basic doubly linked list.
  *
  * === How To Use ===
- * This header defines a struct representing a linked list node (LListNode). All
+ * This header defines a struct representing a linked list node (ListNode). All
  * linked list operations operate on these nodes. Instances of a struct can be
- * linked together by embedding a LListNode in the struct and managing the
+ * linked together by embedding a ListNode in the struct and managing the
  * instances with the operations below. The @container pointer in each node is
  * meant to point to the struct containing the node. This way it is easy to go
  * from a node to its containing struct. The diagram below should how three
@@ -30,18 +30,26 @@
 #define LINKED_LIST_H
 
 
-typedef struct _LListNodeTag LListNode;
-struct _LListNodeTag 
+typedef struct ListNodeTag ListNode;
+struct ListNodeTag 
 {
     void *container;
-    LListNode *next;
-    LListNode *prev;
+    ListNode *next;
+    ListNode *prev;
 };
 
 /*
- * Initialize a linked list node to its default values.
+ * Create a list of one node.
+ *
+ * @node: The node to create a list. @node.next, @node.prev will be null.
+ * @container: The struct containing the node. See usage above.
  */
-#define LLIST_INIT(container, head_var_name) {container, 0, 0}
+static void list_init(ListNode *node, void *container)
+{
+    node->container = container;
+    node->next = 0;
+    node->prev = 0;
+}
 
 /*
  * Add @new_node after @node in the list.
@@ -52,7 +60,7 @@ struct _LListNodeTag
  * @new_node: Add this node after @node in the list.
  * @container: The struct which @new_node is contained in. See usage at top.
  */
-static inline void llist_add_after(LListNode *node, LListNode *new_node,
+static void list_add_after(ListNode *node, ListNode *new_node,
                                    void *new_node_container)
 {
     new_node->container = new_node_container;
@@ -83,7 +91,7 @@ static inline void llist_add_after(LListNode *node, LListNode *new_node,
  * @new_node: Add this node before @node in the list.
  * @container: The struct which @new_node is contained in. See usage at top.
  */
-static inline void llist_add_before(LListNode *node, LListNode *new_node,
+static void list_add_before(ListNode *node, ListNode *new_node,
                                     void *new_node_container)
 {
     new_node->container = new_node_container;
@@ -111,7 +119,7 @@ static inline void llist_add_before(LListNode *node, LListNode *new_node,
  *
  * @node: The node to be removed from the list.
  */
-static inline void llist_remove(LListNode *node)
+static void list_remove(ListNode *node)
 {
     node->prev->next = node->next;
     node->next->prev = node->prev;
@@ -126,7 +134,7 @@ static inline void llist_remove(LListNode *node)
  * @old_node: The node to be replaced by @new_node.
  * @new_node: The node to replace @old_node with.
  */
-static inline void llist_replace(LListNode *old_node, LListNode *new_node)
+static void list_replace(ListNode *old_node, ListNode *new_node)
 {
     /* Link in new node. */
     new_node->next = old_node->next;
@@ -146,16 +154,16 @@ static inline void llist_replace(LListNode *old_node, LListNode *new_node)
  * @node_a: Will take @node_b's previous position in the list.
  * @node_b: Will take @node_a's previous position in the list.
  */
-static inline void llist_swap(LListNode *node_a, LListNode *node_b)
+static void list_swap(ListNode *node_a, ListNode *node_b)
 {
-    LListNode *tmp_prev;
-    LListNode *tmp_next;
+    ListNode *tmp_prev;
+    ListNode *tmp_next;
 
     /* Put @node_b in @node_a's spot. */
-    tmp_next = b->next; /* to put a in b's spot */
-    tmp_prev = b->prev;
-    node_b->prev = a->prev;
-    node_b->next = a->next;
+    tmp_next = node_b->next; /* to put a in b's spot */
+    tmp_prev = node_b->prev;
+    node_b->prev = node_a->prev;
+    node_b->next = node_a->next;
     node_b->next->prev = node_b;
     node_b->prev->next = node_b;
 
@@ -171,10 +179,10 @@ static inline void llist_swap(LListNode *node_a, LListNode *node_b)
  * Iteration starts at (and including) @start_node and goes through the list
  * including the tail.
  * 
- * @start_node: Node to start iteration at.
+ * @start_node: Pointer to node to start iteration at.
  * @cursor: Points to where iteration currently is.
  */
-#define LLIST_FOR_EACH_AFTER(start_node, cursor) \
+#define LIST_FOR_EACH_AFTER(start_node, cursor) \
     for (cursor = start_node; cursor != 0; cursor = cursor->next)
 
 /*
@@ -186,7 +194,7 @@ static inline void llist_swap(LListNode *node_a, LListNode *node_b)
  * @end_node: Node to end iteration before.
  * @cursor: Points to where iteration currently is.
  */
-#define LLIST_FOR_EACH_BETWEEN(start_node, end_node, cursor) \
+#define LIST_FOR_EACH_BETWEEN(start_node, end_node, cursor) \
     for (cursor = start_node; cursor != end_node; cursor = cursor->next)
 
 

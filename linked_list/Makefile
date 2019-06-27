@@ -14,8 +14,11 @@ clean:
 tests: obj/linked_list.o obj/linked_list_tests.o obj/unity.o
 	gcc -g -o tests obj/linked_list.o obj/linked_list_tests.o obj/unity.o
 
-obj/linked_list.o: src/linked_list.c
-	gcc -std=c89 -ansi -pedantic -g -c -o obj/linked_list.o src/linked_list.c
+example: obj/linked_list_example.o
+	gcc -o example obj/linked_list_example.o
+
+obj/linked_list_example.o: src/linked_list_example.c
+	gcc -std=c89 -ansi -pedantic -c -g -o obj/linked_list_example.o src/linked_list_example.c
 
 obj/linked_list_tests.o: src/linked_list_tests.c
 	gcc -g -c -o obj/linked_list_tests.o src/linked_list_tests.c
