@@ -2,13 +2,32 @@
  * A basic doubly linked list.
  *
  * === How To Use ===
- *  - TODO add info about embedding LListNode into structs.
+ * This header defines a struct representing a linked list node (LListNode). All
+ * linked list operations operate on these nodes. Instances of a struct can be
+ * linked together by embedding a LListNode in the struct and managing the
+ * instances with the operations below. The @container pointer in each node is
+ * meant to point to the struct containing the node. This way it is easy to go
+ * from a node to its containing struct. The diagram below should how three
+ * structs (A, B, C) could be linked together.
+ *
+ *     A           B           C      
+ * +-------+   +-------+   +-------+
+ * |   ~   |<+ |   ~   |<+ |   ~   |<+
+ * |+-----+| | |+-----+| | |+-----+| |
+ * ||    -++-+ ||    -++-+ ||    -++-+
+ * |+-----+|   |+-----+|   |+-----+|
+ * ||    -++-->||    -++-->||  \  ||
+ * |+-----+|   |+-----+|   |+-----+|
+ * ||  \  ||<--++-    ||<--++-    ||
+ * |+-----+|   |+-----+|   |+-----+|
+ * +-------+   +-------+   +-------+
  *
  * Written by Max Hanson, June 2019.
  */
 
 #ifndef LINKED_LIST_H
 #define LINKED_LIST_H
+
 
 typedef struct _LListNodeTag LListNode;
 struct _LListNodeTag 
@@ -168,5 +187,6 @@ static inline void llist_swap(LListNode *node_a, LListNode *node_b)
  */
 #define LLIST_FOR_EACH_BETWEEN(start_node, end_node, cursor) \
     for (cursor = start_node; cursor != end_node; cursor = cursor->next)
+
 
 #endif
