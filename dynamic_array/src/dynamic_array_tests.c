@@ -2,12 +2,12 @@
  * Tests for the dynamic array.
  *
  * Written by Max Hanson, June 2019.
- * Licensed under MIT. See LICENSE.txt for more details.
+ * Released into the public domain under CC0. See README.md for more details.
  */
 
+#include "dynamic_array.h"
+#include "../../deps/unity/unity.h"
 #include <stdlib.h> // for random key generation
-#include "unity.h"
-#include "../dynamic_array.h"
 
 // Capacity after one expansion. Macro so that it can be calculated.
 #define EXPANDED_CAPACITY INIT_CAPACITY * EXPANSION_FACTOR 
