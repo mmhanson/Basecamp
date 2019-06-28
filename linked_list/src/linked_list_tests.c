@@ -302,7 +302,7 @@ void test_replace_head()
     TEST_ASSERT_EQUAL(0, to_add->node.prev);
     TEST_ASSERT_EQUAL(0, tail->node.next);
     TEST_ASSERT_EQUAL(&midd->node, to_add->node.next);
-    TEST_ASSERT_EQUAL(&to_add->node, midd->node.next);
+    TEST_ASSERT_EQUAL(&to_add->node, midd->node.prev);
     TEST_ASSERT_EQUAL(&tail->node, midd->node.next);
     TEST_ASSERT_EQUAL(&midd->node, tail->node.prev);
 
@@ -337,16 +337,16 @@ void test_replace_tail()
     // List should go: head <-> midd <-> to_add 
 
     // Test links in chain.
-    TEST_ASSERT_EQUAL(0, to_add->node.prev);
-    TEST_ASSERT_EQUAL(0, tail->node.next);
-    TEST_ASSERT_EQUAL(&midd->node, to_add->node.next);
-    TEST_ASSERT_EQUAL(&to_add->node, midd->node.next);
-    TEST_ASSERT_EQUAL(&tail->node, midd->node.next);
-    TEST_ASSERT_EQUAL(&midd->node, tail->node.prev);
-
-    // Test head is now unlinked from chain.
-    TEST_ASSERT_EQUAL(0, head->node.next);
     TEST_ASSERT_EQUAL(0, head->node.prev);
+    TEST_ASSERT_EQUAL(0, to_add->node.next);
+    TEST_ASSERT_EQUAL(&midd->node, head->node.next);
+    TEST_ASSERT_EQUAL(&head->node, midd->node.prev);
+    TEST_ASSERT_EQUAL(&to_add->node, midd->node.next);
+    TEST_ASSERT_EQUAL(&midd->node, to_add->node.prev);
+
+    // Test tail is now unlinked from chain.
+    TEST_ASSERT_EQUAL(0, tail->node.next);
+    TEST_ASSERT_EQUAL(0, tail->node.prev);
 
     // Test members unmodified.
     TEST_ASSERT_EQUAL(1, head->dummy_mem);
@@ -357,7 +357,40 @@ void test_replace_tail()
 
 void test_replace_mid_node()
 {
-    
+    ContainerStruct *head, *midd, *tail, *to_add;
+
+    head = malloc(sizeof(ContainerStruct));
+    midd = malloc(sizeof(ContainerStruct));
+    tail = malloc(sizeof(ContainerStruct));
+    to_add = malloc(sizeof(ContainerStruct));
+    head->dummy_mem = 1;
+    midd->dummy_mem = 2;
+    tail->dummy_mem = 3;
+    to_add->dummy_mem = 4;
+    list_init(&head->node, head);
+    list_add_after(&head->node, &midd->node, midd);
+    list_add_after(&midd->node, &tail->node, tail);
+
+    list_replace(&midd->node, &to_add->node);
+    // List should go: head <-> to_add <-> tail 
+
+    // Test links in chain.
+    TEST_ASSERT_EQUAL(0, head->node.prev);
+    TEST_ASSERT_EQUAL(0, tail->node.next);
+    TEST_ASSERT_EQUAL(&to_add->node, head->node.next);
+    TEST_ASSERT_EQUAL(&head->node, to_add->node.prev);
+    TEST_ASSERT_EQUAL(&tail->node, to_add->node.next);
+    TEST_ASSERT_EQUAL(&to_add->node, tail->node.prev);
+
+    // Test midd is now unlinked from chain.
+    TEST_ASSERT_EQUAL(0, midd->node.next);
+    TEST_ASSERT_EQUAL(0, midd->node.prev);
+
+    // Test members unmodified.
+    TEST_ASSERT_EQUAL(1, head->dummy_mem);
+    TEST_ASSERT_EQUAL(2, midd->dummy_mem);
+    TEST_ASSERT_EQUAL(3, tail->dummy_mem);
+    TEST_ASSERT_EQUAL(4, to_add->dummy_mem);
 }
 
 int main()
