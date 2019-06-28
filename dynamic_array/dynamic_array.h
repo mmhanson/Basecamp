@@ -20,7 +20,7 @@
  * much, are defined in the constants below.
  *
  * Written by Max Hanson, June 2019.
- * Licensed under MIT. See LICENSE.txt for more details.
+ * Released into the public domain under CC0. See README.md for more details.
  */
 
 #ifndef DYNAMIC_ARRAY_H

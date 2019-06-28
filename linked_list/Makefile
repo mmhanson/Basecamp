@@ -3,8 +3,8 @@
 # Note that the linked list examples are compiled with strict c89 and ansi enforcement,
 # but the tests and test framework are not.
 #
-# Written by Max Hanson, June 2019.
-# Licensed under MIT. See LICENSE.txt for more details.
+# Copyright (c) Max Hanson, June 2019.
+# Released under the MIT License. Refer to LICENSE.txt for more details.
 #
 
 clean:

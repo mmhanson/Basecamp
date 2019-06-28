@@ -1,10 +1,9 @@
 /*
- * Some basic tests for the linked list header.
+ * Some basic unit tests for the linked list header.
  *
  * Written by Max Hanson, June 2019.
- * Licensed under MIT. See LICENSE.txt for more details.
+ * Released into the public domain under CC0. See README.md for more details.
  */
-// TODO add messages to assertions
 
 #include "linked_list.h"
 #include "../../deps/unity/unity.h"
@@ -27,9 +26,12 @@ void test_default_values()
     head->dummy_mem = 0;
     list_init(&head->node, head);
 
-    TEST_ASSERT_EQUAL(head, head->node.container);
-    TEST_ASSERT_EQUAL(0, head->node.next);
-    TEST_ASSERT_EQUAL(0, head->node.prev);
+    TEST_ASSERT_EQUAL_MESSAGE(head, head->node.container,
+        "Incorrect default container value.");
+    TEST_ASSERT_EQUAL_MESSAGE(0, head->node.next,
+        "Incorrect default next value.");
+    TEST_ASSERT_EQUAL_MESSAGE(0, head->node.prev,
+        "Incorrect default prev value.");
 
     free(head);
 }
@@ -45,18 +47,25 @@ void test_add_after_last_node()
     list_init(&head->node, head);
 
     list_add_after(&head->node, &to_add->node, to_add);
+    // List should be: head <-> to_add
 
     // Test nodes link together.
-    TEST_ASSERT_EQUAL(&to_add->node, head->node.next);
-    TEST_ASSERT_EQUAL(&head->node, to_add->node.prev);
+    TEST_ASSERT_EQUAL_MESSAGE(&to_add->node, head->node.next,
+        "Pointers not set properly in add_after when adding the last node.");
+    TEST_ASSERT_EQUAL_MESSAGE(&head->node, to_add->node.prev,
+        "Pointers not set properly in add_after when adding the last node.");
 
     // Test nodes only link together.
-    TEST_ASSERT_EQUAL(0, head->node.prev);
-    TEST_ASSERT_EQUAL(0, to_add->node.next);
+    TEST_ASSERT_EQUAL_MESSAGE(0, head->node.prev,
+        "Pointers not set properly in add_after when adding the last node.");
+    TEST_ASSERT_EQUAL_MESSAGE(0, to_add->node.next,
+        "Pointers not set properly in add_after when adding the last node.");
 
     // Test container member unmodified.
-    TEST_ASSERT_EQUAL(1, head->dummy_mem);
-    TEST_ASSERT_EQUAL(2, to_add->dummy_mem);
+    TEST_ASSERT_EQUAL_MESSAGE(1, head->dummy_mem,
+        "Container members modified in add_after when adding the last node.");
+    TEST_ASSERT_EQUAL_MESSAGE(2, to_add->dummy_mem,
+        "Container members modified in add_after when adding the last node.");
 
     free(head);
     free(to_add);
@@ -70,6 +79,10 @@ void test_add_after_mid_node()
     midd = malloc(sizeof(ContainerStruct));
     tail = malloc(sizeof(ContainerStruct));
     to_add = malloc(sizeof(ContainerStruct));
+    head->dummy_mem = 1;
+    midd->dummy_mem = 2;
+    tail->dummy_mem = 3;
+    to_add->dummy_mem = 4;
     list_init(&head->node, head);
     list_add_after(&head->node, &midd->node, midd);
     list_add_after(&midd->node, &tail->node, tail);
@@ -78,25 +91,43 @@ void test_add_after_mid_node()
     // List should be: head <-> midd <-> to_add <-> tail
 
     // Assert head points to correct nodes.
-    TEST_ASSERT_EQUAL(0, head->node.prev);
-    TEST_ASSERT_EQUAL(&midd->node, head->node.next);
+    TEST_ASSERT_EQUAL_MESSAGE(0, head->node.prev,
+        "Pointers not set right in add_after when adding a middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(&midd->node, head->node.next,
+        "Pointers not set right in add_after when adding a middle node.");
 
     // Assert midd points to correct nodes.
-    TEST_ASSERT_EQUAL(&head->node, midd->node.prev);
-    TEST_ASSERT_EQUAL(&to_add->node, midd->node.next);
+    TEST_ASSERT_EQUAL_MESSAGE(&head->node, midd->node.prev,
+        "Pointers not set right in add_after when adding a middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(&to_add->node, midd->node.next,
+        "Pointers not set right in add_after when adding a middle node.");
 
     // Assert to_add points to correct nodes.
-    TEST_ASSERT_EQUAL(&midd->node, to_add->node.prev);
-    TEST_ASSERT_EQUAL(&tail->node, to_add->node.next);
+    TEST_ASSERT_EQUAL_MESSAGE(&midd->node, to_add->node.prev,
+        "Pointers not set right in add_after when adding a middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(&tail->node, to_add->node.next,
+        "Pointers not set right in add_after when adding a middle node.");
 
     // Assert tail points to correct nodes.
-    TEST_ASSERT_EQUAL(&to_add->node, tail->node.prev);
-    TEST_ASSERT_EQUAL(0, tail->node.next);
+    TEST_ASSERT_EQUAL_MESSAGE(&to_add->node, tail->node.prev,
+        "Pointers not set right in add_after when adding a middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(0, tail->node.next,
+        "Pointers not set right in add_after when adding a middle node.");
+
+    // Test container members unmodified.
+    TEST_ASSERT_EQUAL_MESSAGE(1, head->dummy_mem,
+        "Containers modified in add_before when adding the first node.");
+    TEST_ASSERT_EQUAL_MESSAGE(2, midd->dummy_mem,
+        "Containers modified in add_before when adding the first node.");
+    TEST_ASSERT_EQUAL_MESSAGE(3, tail->dummy_mem,
+        "Containers modified in add_before when adding the first node.");
+    TEST_ASSERT_EQUAL_MESSAGE(4, to_add->dummy_mem,
+        "Containers modified in add_before when adding the first node.");
 
     free(head);
     free(midd);
-    free(to_add);
     free(tail);
+    free(to_add);
 }
 
 void test_add_before_first_node()
@@ -113,16 +144,22 @@ void test_add_before_first_node()
     // List should no be: to_add <-> head
 
     // Test nodes link together.
-    TEST_ASSERT_EQUAL(&to_add->node, head->node.prev);
-    TEST_ASSERT_EQUAL(&head->node, to_add->node.next);
+    TEST_ASSERT_EQUAL_MESSAGE(&to_add->node, head->node.prev,
+        "Pointers not set right in add_before when adding the first node.");
+    TEST_ASSERT_EQUAL_MESSAGE(&head->node, to_add->node.next,
+        "Pointers not set right in add_before when adding the first node.");
 
     // Test nodes only link together.
-    TEST_ASSERT_EQUAL(0, head->node.next);
-    TEST_ASSERT_EQUAL(0, to_add->node.prev);
+    TEST_ASSERT_EQUAL_MESSAGE(0, head->node.next,
+        "Pointers not set right in add_before when adding the first node.");
+    TEST_ASSERT_EQUAL_MESSAGE(0, to_add->node.prev,
+        "Pointers not set right in add_before when adding the first node.");
 
-    // Test container member unmodified.
-    TEST_ASSERT_EQUAL(1, head->dummy_mem);
-    TEST_ASSERT_EQUAL(2, to_add->dummy_mem);
+    // Test container members unmodified.
+    TEST_ASSERT_EQUAL_MESSAGE(1, head->dummy_mem,
+        "Containers modified in add_before when adding the first node.");
+    TEST_ASSERT_EQUAL_MESSAGE(2, to_add->dummy_mem,
+        "Containers modified in add_before when adding the first node.");
 
     free(head);
     free(to_add);
@@ -144,20 +181,28 @@ void test_add_before_mid_node()
     // List should be: head <-> midd <-> to_add <-> tail
 
     // Assert head points to correct nodes.
-    TEST_ASSERT_EQUAL(0, head->node.prev);
-    TEST_ASSERT_EQUAL(&midd->node, head->node.next);
+    TEST_ASSERT_EQUAL_MESSAGE(0, head->node.prev,
+        "Pointers not set right in add_before when adding a middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(&midd->node, head->node.next,
+        "Pointers not set right in add_before when adding a middle node.");
 
     // Assert midd points to correct nodes.
-    TEST_ASSERT_EQUAL(&head->node, midd->node.prev);
-    TEST_ASSERT_EQUAL(&to_add->node, midd->node.next);
+    TEST_ASSERT_EQUAL_MESSAGE(&head->node, midd->node.prev,
+        "Pointers not set right in add_before when adding a middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(&to_add->node, midd->node.next,
+        "Pointers not set right in add_before when adding a middle node.");
 
     // Assert to_add points to correct nodes.
-    TEST_ASSERT_EQUAL(&midd->node, to_add->node.prev);
-    TEST_ASSERT_EQUAL(&tail->node, to_add->node.next);
+    TEST_ASSERT_EQUAL_MESSAGE(&midd->node, to_add->node.prev,
+        "Pointers not set right in add_before when adding a middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(&tail->node, to_add->node.next,
+        "Pointers not set right in add_before when adding a middle node.");
 
     // Assert tail points to correct nodes.
-    TEST_ASSERT_EQUAL(&to_add->node, tail->node.prev);
-    TEST_ASSERT_EQUAL(0, tail->node.next);
+    TEST_ASSERT_EQUAL_MESSAGE(&to_add->node, tail->node.prev,
+        "Pointers not set right in add_before when adding a middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(0, tail->node.next,
+        "Pointers not set right in add_before when adding a middle node.");
 
     free(head);
     free(midd);
@@ -175,9 +220,15 @@ void test_remove_list_of_one()
 
     list_remove(&head->node);
 
-    TEST_ASSERT_EQUAL(0, head->node.next); // test links same.
-    TEST_ASSERT_EQUAL(0, head->node.prev);
-    TEST_ASSERT_EQUAL(1, head->dummy_mem); // test container unmodified
+    TEST_ASSERT_EQUAL_MESSAGE(0, head->node.next,
+        "Node modified when removing list of one."); // test links same.
+    TEST_ASSERT_EQUAL_MESSAGE(0, head->node.prev,
+        "Node modified when removing list of one.");
+    // test container unmodified
+    TEST_ASSERT_EQUAL_MESSAGE(1, head->dummy_mem,
+        "Container modified when removing list of one.");
+
+    free(head);
 }
 
 void test_remove_head()
@@ -198,19 +249,32 @@ void test_remove_head()
     // List should go: midd <-> tail
 
     // Test links in chain.
-    TEST_ASSERT_EQUAL(0, midd->node.prev);
-    TEST_ASSERT_EQUAL(0, tail->node.next);
-    TEST_ASSERT_EQUAL(&tail->node, midd->node.next);
-    TEST_ASSERT_EQUAL(&midd->node, tail->node.prev);
+    TEST_ASSERT_EQUAL_MESSAGE(0, midd->node.prev,
+        "Pointers not set right when removing head.");
+    TEST_ASSERT_EQUAL_MESSAGE(0, tail->node.next,
+        "Pointers not set right when removing head.");
+    TEST_ASSERT_EQUAL_MESSAGE(&tail->node, midd->node.next,
+        "Pointers not set right when removing head.");
+    TEST_ASSERT_EQUAL_MESSAGE(&midd->node, tail->node.prev,
+        "Pointers not set right when removing head.");
 
     // Test head is now unlinked from chain.
-    TEST_ASSERT_EQUAL(0, head->node.next);
-    TEST_ASSERT_EQUAL(0, head->node.prev);
+    TEST_ASSERT_EQUAL_MESSAGE(0, head->node.next,
+        "Head not removed from list when removing head.");
+    TEST_ASSERT_EQUAL_MESSAGE(0, head->node.prev,
+    "Head not removed from list when removing head.");
 
     // Test members unmodified.
-    TEST_ASSERT_EQUAL(1, head->dummy_mem);
-    TEST_ASSERT_EQUAL(2, midd->dummy_mem);
-    TEST_ASSERT_EQUAL(3, tail->dummy_mem);
+    TEST_ASSERT_EQUAL_MESSAGE(1, head->dummy_mem,
+        "Containers modified when removing head.");
+    TEST_ASSERT_EQUAL_MESSAGE(2, midd->dummy_mem,
+        "Containers modified when removing head.");
+    TEST_ASSERT_EQUAL_MESSAGE(3, tail->dummy_mem,
+        "Containers modified when removing head.");
+
+    free(head);
+    free(midd);
+    free(tail);
 }
 
 void test_remove_tail()
@@ -231,19 +295,32 @@ void test_remove_tail()
     // List should go: head <-> midd 
 
     // Test links in chain.
-    TEST_ASSERT_EQUAL(0, head->node.prev);
-    TEST_ASSERT_EQUAL(0, midd->node.next);
-    TEST_ASSERT_EQUAL(&midd->node, head->node.next);
-    TEST_ASSERT_EQUAL(&head->node, midd->node.prev);
+    TEST_ASSERT_EQUAL_MESSAGE(0, head->node.prev,
+        "Pointers not set right when removing tail.");
+    TEST_ASSERT_EQUAL_MESSAGE(0, midd->node.next,
+        "Pointers not set right when removing tail.");
+    TEST_ASSERT_EQUAL_MESSAGE(&midd->node, head->node.next,
+        "Pointers not set right when removing tail.");
+    TEST_ASSERT_EQUAL_MESSAGE(&head->node, midd->node.prev,
+        "Pointers not set right when removing tail.");
 
     // Test tail is now unlinked from chain.
-    TEST_ASSERT_EQUAL(0, tail->node.next);
-    TEST_ASSERT_EQUAL(0, tail->node.prev);
+    TEST_ASSERT_EQUAL_MESSAGE(0, tail->node.next,
+        "Tail not removed from list when removing tail.");
+    TEST_ASSERT_EQUAL_MESSAGE(0, tail->node.prev,
+        "Tail not removed from list when removing tail.");
 
     // Test members unmodified.
-    TEST_ASSERT_EQUAL(1, head->dummy_mem);
-    TEST_ASSERT_EQUAL(2, midd->dummy_mem);
-    TEST_ASSERT_EQUAL(3, tail->dummy_mem);
+    TEST_ASSERT_EQUAL_MESSAGE(1, head->dummy_mem,
+        "Container members modified when removing tail.");
+    TEST_ASSERT_EQUAL_MESSAGE(2, midd->dummy_mem,
+        "Container members modified when removing tail.");
+    TEST_ASSERT_EQUAL_MESSAGE(3, tail->dummy_mem,
+        "Container members modified when removing tail.");
+
+    free(head);
+    free(midd);
+    free(tail);
 }
 
 void test_remove_mid_node()
@@ -264,19 +341,32 @@ void test_remove_mid_node()
     // List should go: head <-> tail
 
     // Test links in chain.
-    TEST_ASSERT_EQUAL(0, head->node.prev);
-    TEST_ASSERT_EQUAL(0, tail->node.next);
-    TEST_ASSERT_EQUAL(&tail->node, head->node.next);
-    TEST_ASSERT_EQUAL(&head->node, tail->node.prev);
+    TEST_ASSERT_EQUAL_MESSAGE(0, head->node.prev,
+        "Pointers not set right when removing middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(0, tail->node.next,
+        "Pointers not set right when removing middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(&tail->node, head->node.next,
+        "Pointers not set right when removing middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(&head->node, tail->node.prev,
+        "Pointers not set right when removing middle node.");
 
     // Test midd is now unlinked from chain.
-    TEST_ASSERT_EQUAL(0, midd->node.next);
-    TEST_ASSERT_EQUAL(0, midd->node.prev);
+    TEST_ASSERT_EQUAL_MESSAGE(0, midd->node.next,
+        "Middle node not unlinked from list when removing middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(0, midd->node.prev,
+        "Middle node not unlinked from list when removing middle node.");
 
     // Test members unmodified.
-    TEST_ASSERT_EQUAL(1, head->dummy_mem);
-    TEST_ASSERT_EQUAL(2, midd->dummy_mem);
-    TEST_ASSERT_EQUAL(3, tail->dummy_mem);
+    TEST_ASSERT_EQUAL_MESSAGE(1, head->dummy_mem,
+        "Container members modified when removing middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(2, midd->dummy_mem,
+        "Container members modified when removing middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(3, tail->dummy_mem,
+        "Container members modified when removing middle node.");
+
+    free(head);
+    free(midd);
+    free(tail);
 }
 
 void test_replace_head()
@@ -299,22 +389,39 @@ void test_replace_head()
     // List should go: to_add <-> midd <-> tail
 
     // Test links in chain.
-    TEST_ASSERT_EQUAL(0, to_add->node.prev);
-    TEST_ASSERT_EQUAL(0, tail->node.next);
-    TEST_ASSERT_EQUAL(&midd->node, to_add->node.next);
-    TEST_ASSERT_EQUAL(&to_add->node, midd->node.prev);
-    TEST_ASSERT_EQUAL(&tail->node, midd->node.next);
-    TEST_ASSERT_EQUAL(&midd->node, tail->node.prev);
+    TEST_ASSERT_EQUAL_MESSAGE(0, to_add->node.prev,
+        "Pointers not set right when replacing head.");
+    TEST_ASSERT_EQUAL_MESSAGE(0, tail->node.next,
+        "Pointers not set right when replacing head.");
+    TEST_ASSERT_EQUAL_MESSAGE(&midd->node, to_add->node.next,
+        "Pointers not set right when replacing head.");
+    TEST_ASSERT_EQUAL_MESSAGE(&to_add->node, midd->node.prev,
+        "Pointers not set right when replacing head.");
+    TEST_ASSERT_EQUAL_MESSAGE(&tail->node, midd->node.next,
+        "Pointers not set right when replacing head.");
+    TEST_ASSERT_EQUAL_MESSAGE(&midd->node, tail->node.prev,
+        "Pointers not set right when replacing head.");
 
     // Test head is now unlinked from chain.
-    TEST_ASSERT_EQUAL(0, head->node.next);
-    TEST_ASSERT_EQUAL(0, head->node.prev);
+    TEST_ASSERT_EQUAL_MESSAGE(0, head->node.next,
+        "Head node not unlinked from list when replacing head.");
+    TEST_ASSERT_EQUAL_MESSAGE(0, head->node.prev,
+        "Head node not unlinked from list when replacing head.");
 
     // Test members unmodified.
-    TEST_ASSERT_EQUAL(1, head->dummy_mem);
-    TEST_ASSERT_EQUAL(2, midd->dummy_mem);
-    TEST_ASSERT_EQUAL(3, tail->dummy_mem);
-    TEST_ASSERT_EQUAL(4, to_add->dummy_mem);
+    TEST_ASSERT_EQUAL_MESSAGE(1, head->dummy_mem,
+        "Container members modified when replacing head.");
+    TEST_ASSERT_EQUAL_MESSAGE(2, midd->dummy_mem,
+        "Container members modified when replacing head.");
+    TEST_ASSERT_EQUAL_MESSAGE(3, tail->dummy_mem,
+        "Container members modified when replacing head.");
+    TEST_ASSERT_EQUAL_MESSAGE(4, to_add->dummy_mem,
+        "Container members modified when replacing head.");
+
+    free(head);
+    free(midd);
+    free(tail);
+    free(to_add);
 }
 
 void test_replace_tail()
@@ -337,22 +444,39 @@ void test_replace_tail()
     // List should go: head <-> midd <-> to_add 
 
     // Test links in chain.
-    TEST_ASSERT_EQUAL(0, head->node.prev);
-    TEST_ASSERT_EQUAL(0, to_add->node.next);
-    TEST_ASSERT_EQUAL(&midd->node, head->node.next);
-    TEST_ASSERT_EQUAL(&head->node, midd->node.prev);
-    TEST_ASSERT_EQUAL(&to_add->node, midd->node.next);
-    TEST_ASSERT_EQUAL(&midd->node, to_add->node.prev);
+    TEST_ASSERT_EQUAL_MESSAGE(0, head->node.prev,
+        "Pointers not set right when replacing tail.");
+    TEST_ASSERT_EQUAL_MESSAGE(0, to_add->node.next,
+        "Pointers not set right when replacing tail.");
+    TEST_ASSERT_EQUAL_MESSAGE(&midd->node, head->node.next,
+        "Pointers not set right when replacing tail.");
+    TEST_ASSERT_EQUAL_MESSAGE(&head->node, midd->node.prev,
+        "Pointers not set right when replacing tail.");
+    TEST_ASSERT_EQUAL_MESSAGE(&to_add->node, midd->node.next,
+        "Pointers not set right when replacing tail.");
+    TEST_ASSERT_EQUAL_MESSAGE(&midd->node, to_add->node.prev,
+        "Pointers not set right when replacing tail.");
 
     // Test tail is now unlinked from chain.
-    TEST_ASSERT_EQUAL(0, tail->node.next);
-    TEST_ASSERT_EQUAL(0, tail->node.prev);
+    TEST_ASSERT_EQUAL_MESSAGE(0, tail->node.next,
+        "Tail not unlinked from list when replacing tail.");
+    TEST_ASSERT_EQUAL_MESSAGE(0, tail->node.prev,
+    "Tail not unlinked from list when replacing tail.");
 
     // Test members unmodified.
-    TEST_ASSERT_EQUAL(1, head->dummy_mem);
-    TEST_ASSERT_EQUAL(2, midd->dummy_mem);
-    TEST_ASSERT_EQUAL(3, tail->dummy_mem);
-    TEST_ASSERT_EQUAL(4, to_add->dummy_mem);
+    TEST_ASSERT_EQUAL_MESSAGE(1, head->dummy_mem,
+        "Containers modified when replacing tail.");
+    TEST_ASSERT_EQUAL_MESSAGE(2, midd->dummy_mem,
+        "Containers modified when replacing tail.");
+    TEST_ASSERT_EQUAL_MESSAGE(3, tail->dummy_mem,
+        "Containers modified when replacing tail.");
+    TEST_ASSERT_EQUAL_MESSAGE(4, to_add->dummy_mem,
+        "Containers modified when replacing tail.");
+
+    free(head);
+    free(midd);
+    free(tail);
+    free(to_add);
 }
 
 void test_replace_mid_node()
@@ -375,22 +499,39 @@ void test_replace_mid_node()
     // List should go: head <-> to_add <-> tail 
 
     // Test links in chain.
-    TEST_ASSERT_EQUAL(0, head->node.prev);
-    TEST_ASSERT_EQUAL(0, tail->node.next);
-    TEST_ASSERT_EQUAL(&to_add->node, head->node.next);
-    TEST_ASSERT_EQUAL(&head->node, to_add->node.prev);
-    TEST_ASSERT_EQUAL(&tail->node, to_add->node.next);
-    TEST_ASSERT_EQUAL(&to_add->node, tail->node.prev);
+    TEST_ASSERT_EQUAL_MESSAGE(0, head->node.prev,
+        "Pointers not set right when replacing a middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(0, tail->node.next,
+        "Pointers not set right when replacing a middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(&to_add->node, head->node.next,
+        "Pointers not set right when replacing a middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(&head->node, to_add->node.prev,
+        "Pointers not set right when replacing a middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(&tail->node, to_add->node.next,
+        "Pointers not set right when replacing a middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(&to_add->node, tail->node.prev,
+        "Pointers not set right when replacing a middle node.");
 
     // Test midd is now unlinked from chain.
-    TEST_ASSERT_EQUAL(0, midd->node.next);
-    TEST_ASSERT_EQUAL(0, midd->node.prev);
+    TEST_ASSERT_EQUAL_MESSAGE(0, midd->node.next,
+        "Middle node not unlinked from list when replacing middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(0, midd->node.prev,
+        "Middle node not unlinked from list when replacing middle node.");
 
     // Test members unmodified.
-    TEST_ASSERT_EQUAL(1, head->dummy_mem);
-    TEST_ASSERT_EQUAL(2, midd->dummy_mem);
-    TEST_ASSERT_EQUAL(3, tail->dummy_mem);
-    TEST_ASSERT_EQUAL(4, to_add->dummy_mem);
+    TEST_ASSERT_EQUAL_MESSAGE(1, head->dummy_mem,
+        "Containers modified when replacing middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(2, midd->dummy_mem,
+        "Containers modified when replacing middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(3, tail->dummy_mem,
+        "Containers modified when replacing middle node.");
+    TEST_ASSERT_EQUAL_MESSAGE(4, to_add->dummy_mem,
+        "Containers modified when replacing middle node.");
+
+    free(head);
+    free(midd);
+    free(tail);
+    free(to_add);
 }
 
 void test_for_each_after_entire_list()
@@ -415,11 +556,17 @@ void test_for_each_after_entire_list()
     LIST_FOR_EACH_AFTER(&head->node, cursor)
     {
         cursor_container = cursor->container;
-        TEST_ASSERT_EQUAL(exp_dummy_mem, cursor_container->dummy_mem);
+        TEST_ASSERT_EQUAL_MESSAGE(exp_dummy_mem, cursor_container->dummy_mem,
+            "Iteration not correct under LIST_FOR_EACH_AFTER.");
         tot_dummy_mems += exp_dummy_mem;
         exp_dummy_mem++;
     }
-    TEST_ASSERT_EQUAL(1 + 2 + 3, tot_dummy_mems);
+    TEST_ASSERT_EQUAL_MESSAGE(1 + 2 + 3, tot_dummy_mems,
+        "Iteration not correct under LIST_FOR_EACH_AFTER.");
+
+    free(head);
+    free(midd);
+    free(tail);
 }
 
 void test_for_each_after_part_list()
@@ -452,15 +599,25 @@ void test_for_each_after_part_list()
     LIST_FOR_EACH_BETWEEN(&midd0->node, &tail->node, cursor)
     {
         cursor_container = cursor->container;
-        TEST_ASSERT_EQUAL(exp_dummy_mem, cursor_container->dummy_mem);
+        TEST_ASSERT_EQUAL_MESSAGE(exp_dummy_mem, cursor_container->dummy_mem,
+            "Iteration incorrect under LIST_FOR_EACH_BETWEEN.");
 
         iterd_dummy_mems[idx] = exp_dummy_mem; // keep record to check later
         exp_dummy_mem++;
         idx++;
     }
-    TEST_ASSERT_EQUAL(2, iterd_dummy_mems[0]);
-    TEST_ASSERT_EQUAL(3, iterd_dummy_mems[1]);
-    TEST_ASSERT_EQUAL(4, iterd_dummy_mems[2]);
+    TEST_ASSERT_EQUAL_MESSAGE(2, iterd_dummy_mems[0],
+        "Iteration incorrect under LIST_FOR_EACH_BETWEEN.");
+    TEST_ASSERT_EQUAL_MESSAGE(3, iterd_dummy_mems[1],
+        "Iteration incorrect under LIST_FOR_EACH_BETWEEN.");
+    TEST_ASSERT_EQUAL_MESSAGE(4, iterd_dummy_mems[2],
+        "Iteration incorrect under LIST_FOR_EACH_BETWEEN.");
+
+    free(head);
+    free(midd0);
+    free(midd1);
+    free(midd2);
+    free(tail);
 }
 
 int main()

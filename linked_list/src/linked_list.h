@@ -23,7 +23,7 @@
  * +-------+   +-------+   +-------+
  *
  * Written by Max Hanson, June 2019.
- * Licensed under MIT. See LICENSE.txt for more details.
+ * Released into the public domain under CC0. See README.md for more details.
  */
 
 #ifndef LINKED_LIST_H
@@ -40,6 +40,7 @@ struct ListNodeTag
 
 /*
  * Create a list of one node.
+ * O(1) complexity.
  *
  * @node: The node to create a list. @node.next, @node.prev will be null.
  * @container: The struct containing the node. See usage above.
@@ -61,7 +62,7 @@ static void list_init(ListNode *node, void *container)
  * @container: The struct which @new_node is contained in. See usage at top.
  */
 static void list_add_after(ListNode *node, ListNode *new_node,
-                                   void *new_node_container)
+                           void *new_node_container)
 {
     new_node->container = new_node_container;
 

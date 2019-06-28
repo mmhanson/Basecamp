@@ -1,7 +1,7 @@
 # Makefile for the dynamic array
 #
-# Written by Max Hanson, June 2019
-# Licensed under MIT. See LICENSE.txt for more details.
+# Written by Max Hanson, June 2019.
+# Released into the public domain under CC0. See README.md for more details.
 # TODO precompile dynamic_array.h with -c89, -pedantic flags
 
 clean:

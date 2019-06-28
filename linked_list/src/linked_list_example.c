@@ -4,7 +4,7 @@
  * In this example, a list of car parts is created and iterated over.
  *
  * Written by Max Hanson, June 2019.
- * Licensed under MIT. See LICENSE.txt for more details.
+ * Released into the public domain under CC0. See README.md for more details.
  */
 
 #include "linked_list.h"
