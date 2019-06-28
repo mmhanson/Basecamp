@@ -1,5 +1,6 @@
 /*
  * A basic doubly linked list.
+ * See https://en.wikipedia.org/wiki/Linked_list for the theory.
  *
  * === How To Use ===
  * This header defines a struct representing a linked list node (ListNode). All
