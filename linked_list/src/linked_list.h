@@ -182,11 +182,11 @@ static void list_replace(ListNode *old_node, ListNode *new_node)
  * Iteration starts at (and including) @start_node and goes through the list
  * including the tail.
  * 
- * @start_node: Pointer to node to start iteration at.
- * @cursor: Points to where iteration currently is.
+ * @start_node_ptr: Pointer to node to start iteration at.
+ * @cursor: A ListNode that points to where iteration currently is.
  */
-#define LIST_FOR_EACH_AFTER(start_node, cursor) \
-    for (cursor = start_node; cursor != 0; cursor = cursor->next)
+#define LIST_FOR_EACH_AFTER(start_node_ptr, cursor) \
+    for (cursor = start_node_ptr; cursor != 0; cursor = cursor->next)
 
 /*
  * Iterate over a linked list between two nodes.

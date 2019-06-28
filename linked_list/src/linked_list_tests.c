@@ -393,6 +393,76 @@ void test_replace_mid_node()
     TEST_ASSERT_EQUAL(4, to_add->dummy_mem);
 }
 
+void test_for_each_after_entire_list()
+{
+    ContainerStruct *head, *midd, *tail;
+    ContainerStruct *cursor_container;
+    ListNode *cursor;
+    int exp_dummy_mem, tot_dummy_mems;
+
+    head = malloc(sizeof(ContainerStruct));
+    midd = malloc(sizeof(ContainerStruct));
+    tail = malloc(sizeof(ContainerStruct));
+    head->dummy_mem = 1;
+    midd->dummy_mem = 2;
+    tail->dummy_mem = 3;
+    list_init(&head->node, head);
+    list_add_after(&head->node, &midd->node, midd);
+    list_add_after(&midd->node, &tail->node, tail);
+
+    exp_dummy_mem = 1;
+    tot_dummy_mems = 0; // Add dummy mems here to verify we hit all nodes.
+    LIST_FOR_EACH_AFTER(&head->node, cursor)
+    {
+        cursor_container = cursor->container;
+        TEST_ASSERT_EQUAL(exp_dummy_mem, cursor_container->dummy_mem);
+        tot_dummy_mems += exp_dummy_mem;
+        exp_dummy_mem++;
+    }
+    TEST_ASSERT_EQUAL(1 + 2 + 3, tot_dummy_mems);
+}
+
+void test_for_each_after_part_list()
+{
+    ContainerStruct *head, *midd0, *midd1, *midd2, *tail;
+    ContainerStruct *cursor_container;
+    ListNode *cursor;
+    int exp_dummy_mem, idx;
+    int iterd_dummy_mems[5];
+
+    head = malloc(sizeof(ContainerStruct));
+    midd0 = malloc(sizeof(ContainerStruct));
+    midd1 = malloc(sizeof(ContainerStruct));
+    midd2 = malloc(sizeof(ContainerStruct));
+    tail = malloc(sizeof(ContainerStruct));
+    head->dummy_mem = 1;
+    midd0->dummy_mem = 2;
+    midd1->dummy_mem = 3;
+    midd2->dummy_mem = 4;
+    tail->dummy_mem = 5;
+    list_init(&head->node, head);
+    list_add_after(&head->node, &midd0->node, midd0);
+    list_add_after(&midd0->node, &midd1->node, midd1);
+    list_add_after(&midd1->node, &midd2->node, midd2);
+    list_add_after(&midd2->node, &tail->node, tail);
+
+    exp_dummy_mem = 2;
+    idx = 0;
+    // Only iterate [midd0..tail)
+    LIST_FOR_EACH_BETWEEN(&midd0->node, &tail->node, cursor)
+    {
+        cursor_container = cursor->container;
+        TEST_ASSERT_EQUAL(exp_dummy_mem, cursor_container->dummy_mem);
+
+        iterd_dummy_mems[idx] = exp_dummy_mem; // keep record to check later
+        exp_dummy_mem++;
+        idx++;
+    }
+    TEST_ASSERT_EQUAL(2, iterd_dummy_mems[0]);
+    TEST_ASSERT_EQUAL(3, iterd_dummy_mems[1]);
+    TEST_ASSERT_EQUAL(4, iterd_dummy_mems[2]);
+}
+
 int main()
 {
     UNITY_BEGIN();
@@ -424,6 +494,11 @@ int main()
     RUN_TEST(test_replace_tail);
     // Replace at the middle of a list. Verify links and containers unmodified.
     RUN_TEST(test_replace_mid_node);
+
+    // Iterate over entire list with FOR_EACH_AFTER. Verify hit each node.
+    RUN_TEST(test_for_each_after_entire_list);
+    // Iterate over part of list with FOR_EACH_AFTER. Verify hit some nodes.
+    RUN_TEST(test_for_each_after_part_list);
 
     UNITY_END();
 }
