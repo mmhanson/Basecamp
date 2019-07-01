@@ -135,8 +135,8 @@ static float __darr_recalc_load(int size, int capacity);
  * @self: Its internal array's elements will be copied to @new_array, then
  *     @new_array will become its new internal array.
  * @new_array: Pointer to a new array. @self's internal array elements will be
- *     copied into this array in order. Caution! must be at least as big in
- *     capacity as @self's internal array.
+ *     copied into this array in order. CAUTION: must be at least as big in
+ *     capacity as @self.size.
  * @new_cap: The capacity of @new_array. How many elements it can hold. Needed
  *     to recalculate members of @self.
  * @return: Pointer to old internal array for deallocation by the user.
