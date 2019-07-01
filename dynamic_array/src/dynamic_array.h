@@ -168,6 +168,7 @@ static float __darr_recalc_load(int size, int capacity);
  *     Size will be incremented and load recalculated if the add is successful.
  * @elem: The element to be added.
  * @idx: The index to add @elem at. @elem will be the new self->array[i].
+ *       CAUTION: must be in the range [0..@self.size).
  * @return: 0 if the add was successful. 1 if an expansion is suggested after
  *     the addition. 2 if the @elem could not be added, array is full.
  */

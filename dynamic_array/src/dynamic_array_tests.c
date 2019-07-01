@@ -12,6 +12,7 @@
 DEFINE_DYNAMIC_ARRAY(float)
 
 static void fill_array(DynamicArray_float *darr);
+static void half_fill_array(DynamicArray_float *darr);
 static void double_array(DynamicArray_float *darr);
 static int remove_to_suggested_contraction(DynamicArray_float *darr);
 static void half_array(DynamicArray_float *darr);
@@ -186,6 +187,126 @@ void test_contraction_space()
     }
 }
 
+void test_insertion_first()
+{
+    const int init_cap = 10;
+    int size_snp;
+    float head_snp;
+    DynamicArray_float darr;
+
+    darr_float_init(&darr,
+                    malloc(init_cap * sizeof(float)),
+                    init_cap);
+
+    darr_float_insert(&darr, 12, 0);
+
+    TEST_ASSERT_EQUAL(1, darr.size);
+    TEST_ASSERT_EQUAL(12, darr.array[0]);
+}
+
+void test_insertion_new_head()
+{
+    const int init_cap = 10;
+    int size_snp;
+    float head_snp;
+    DynamicArray_float darr;
+
+    darr_float_init(&darr,
+                    malloc(init_cap * sizeof(float)),
+                    init_cap);
+
+    half_fill_array(&darr);
+
+    size_snp = darr.size; // Snapshot size.
+    head_snp = darr.array[0]; // Snapshot head.
+    darr_float_insert(&darr, 12, 0);
+
+    TEST_ASSERT_EQUAL(size_snp + 1, darr.size);
+    TEST_ASSERT_EQUAL(12, darr.array[0]);
+    TEST_ASSERT_EQUAL(head_snp, darr.array[1]); // Verify old head pushed up.
+}
+
+void test_insertion_new_tail()
+{
+    const int init_cap = 10;
+    DynamicArray_float darr;
+    int size_snp;
+    float tail_snp;
+
+    darr_float_init(&darr,
+                    malloc(init_cap * sizeof(float)),
+                    init_cap);
+
+    half_fill_array(&darr);
+
+    size_snp = darr.size;
+    tail_snp = darr.array[darr.size - 1];
+    darr_float_insert(&darr, 12, darr.size);
+
+    TEST_ASSERT_EQUAL(size_snp + 1, darr.size);
+    TEST_ASSERT_EQUAL(12, darr.array[darr.size - 1]); // Verify new tail.
+    TEST_ASSERT_EQUAL(tail_snp, darr.array[darr.size - 2]); // Verify old tail.
+}
+
+void test_insertion_new_midd()
+{
+    const int insert_idx = 5;
+    const int init_cap = 10;
+    DynamicArray_float darr;
+    float range_snp[3];
+    int size_snp;
+
+    darr_float_init(&darr,
+                    malloc(init_cap * sizeof(float)),
+                    init_cap);
+
+    half_fill_array(&darr);
+
+    // Snapshot of range around insertion
+    range_snp[0] = darr.array[insert_idx - 1];
+    range_snp[1] = darr.array[insert_idx];
+    range_snp[2] = darr.array[insert_idx + 1];
+    size_snp = darr.size;
+    darr_float_insert(&darr, 12, insert_idx);
+
+    TEST_ASSERT_EQUAL(size_snp + 1, darr.size);
+    // Verify array goes: ..., range_snp[0], 12, range_snp[1], range_snp[2], ...
+    TEST_ASSERT_EQUAL(range_snp[0], darr.array[insert_idx - 1]);
+    TEST_ASSERT_EQUAL(12, darr.array[insert_idx]);
+    TEST_ASSERT_EQUAL(range_snp[1], darr.array[insert_idx + 1]);
+    TEST_ASSERT_EQUAL(range_snp[2], darr.array[insert_idx + 2]);
+}
+
+void test_insertion_full()
+{
+    const int init_cap = 10;
+    DynamicArray_float darr;
+    float array_snp[init_cap];
+    int size_snp;
+    int cap_snp;
+
+    darr_float_init(&darr,
+                    malloc(init_cap * sizeof(float)),
+                    init_cap);
+    fill_array(&darr);
+
+    // Snapshot entire internal array.
+    for (int cursor = 0; cursor < init_cap; cursor++)
+    {
+        array_snp[cursor] = darr.array[cursor];
+    }
+    size_snp = darr.size;
+    cap_snp = darr.capacity;
+    darr_float_insert(&darr, 5, 9);
+
+    TEST_ASSERT_EQUAL(size_snp, darr.size);
+    TEST_ASSERT_EQUAL(cap_snp, darr.capacity);
+    for (int cursor = 0; cursor < darr.capacity; cursor++)
+    {
+        TEST_ASSERT_EQUAL(array_snp[cursor], darr.array[cursor]);
+    }
+}
+
 int main()
 {
     UNITY_BEGIN();
@@ -212,6 +333,17 @@ int main()
     // Fill array. Expand. Contract. Fill again. Verify filled elems & size.
     RUN_TEST(test_contraction_space);
 
+    /// Insertion tests.
+    // Insert first elem. Verify.
+    RUN_TEST(test_insertion_first);
+    // Partly fill array. Insert elem @ first index. Verify.
+    RUN_TEST(test_insertion_new_head);
+    // Partly fill array. Insert elem @ last index. Verify.
+    RUN_TEST(test_insertion_new_tail);
+    // Partly fill array. Insert halfway in. Verify.
+    RUN_TEST(test_insertion_new_midd);
+    // Fill array. Attempt insertion. Verify nothing happened.
+    RUN_TEST(test_insertion_full);
 
 
     UNITY_END();
@@ -227,6 +359,17 @@ static void fill_array(DynamicArray_float *darr)
     for (int cursor = darr->size; cursor < darr->capacity; cursor++)
     {
         darr_float_insert(darr, cursor, cursor);
+    }
+}
+
+/*
+ * Fill an array to half capacity.
+ */
+static void half_fill_array(DynamicArray_float *darr)
+{
+    while (darr->load < 0.5)
+    {
+        darr_float_insert(darr, 0, 0); // Insert 0 at first index.
     }
 }
 
