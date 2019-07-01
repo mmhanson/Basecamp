@@ -3,22 +3,20 @@
 # Written by Max Hanson, June 2019.
 # Released into the public domain under CC0. See README.md for more details.
 
-# TODO precompile dynamic_array.h with -c89, -pedantic flags
-
 clean:
 	rm -rf obj/*
 	rm -rf tests
-	rm -rf driver
+	rm -rf example
 
 tests: obj/dynamic_array_tests.o obj/unity.o
 	gcc -g -o tests obj/dynamic_array_tests.o obj/unity.o
 
-driver: obj/dynamic_array_driver.o
-	gcc -g -o driver obj/dynamic_array_driver.o
+example: obj/dynamic_array_example.o
+	gcc -g -o example obj/dynamic_array_example.o
 
-obj/dynamic_array_driver.o: src/dynamic_array_driver.c
-	# A basic driver to test compiling the dynamic_array.h under pediantic C89 and ansi standards
-	gcc -g -c --std=c89 -ansi -pedantic -o obj/dynamic_array_driver.o src/dynamic_array_driver.c
+obj/dynamic_array_example.o: src/dynamic_array_example.c
+	# Compile example under strict c89 and ansi standards.
+	gcc -g -c --std=c89 -ansi -pedantic -o obj/dynamic_array_example.o src/dynamic_array_example.c
 
 obj/dynamic_array_tests.o: src/dynamic_array_tests.c
 	gcc -g -c -o obj/dynamic_array_tests.o src/dynamic_array_tests.c
