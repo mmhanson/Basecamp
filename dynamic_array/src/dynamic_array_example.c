@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include "dynamic_array.h"
 
-DEFINE_DYNAMIC_ARRAY(int)
+DEFINE_DYNAMIC_ARRAY(int);
 static void print_darr_members(DynamicArray_int *darr);
 
 int main()

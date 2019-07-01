@@ -12,7 +12,7 @@
  * === Declaration ===
  *   To use the struct and functions defined in this header, you must specify the
  *   type of data that the dynamic array is to hold (see the README for why). Do
- *   this by calling the macro `DEFINE_DYNAMIC_ARRAY(T)` where 'T' is the type
+ *   this by calling the macro `DEFINE_DYNAMIC_ARRAY(T);` where 'T' is the type
  *   that the dynamic array is to hold (note 'T' must be alphanumerical, pointers must be typecast). This will
  *   define the struct 'DynamicArray_T' and the operations:
  *     - darr_T_init(~)
@@ -21,18 +21,18 @@
  *     - darr_T_remove(~)
  *   The reason the 'T' is included in the struct and operation names is so many
  *   different types of dynamic arrays can be declared and used in the same file.
- *   Calling the macro `DEFINE_DYNAMIC_ARRAY(T)` more than once does nothing.
+ *   Calling the macro `DEFINE_DYNAMIC_ARRAY(T);` more than once does nothing.
  *
  * === Declaration Walkthrough ===
  *   To define a dynamic array holding floats, I must put
- *   `DEFINE_DYNAMIC_ARRAY(float)` at the top of my source file. After this, the
+ *   `DEFINE_DYNAMIC_ARRAY(float);` at the top of my source file. After this, the
      dynamic array type DynamicArray_float is defined as well as the functions:
  *     - darr_float_init(~)
  *     - darr_float_realloc(~)
  *     - darr_float_insert(~)
  *     - darr_float_remove(~)
  *   If I also want a dynamic array holding ints, I can also put
- *   `DEFINE_DYNAMIC_ARRAY(int)` at the top of my source file. After that, the
+ *   `DEFINE_DYNAMIC_ARRAY(int);` at the top of my source file. After that, the
  *   dynamic array type DynamicArray_int is defined as well as the functions:
  *     - darr_int_init(~)
  *     - darr_int_realloc(~)
@@ -76,7 +76,7 @@ static float __darr_recalc_load(int size, int capacity);
  *
  * @T: the type parameter. Must be alphanumerical (pointers must be typecast).
  */
-#define DEFINE_DYNAMIC_ARRAY(T) \
+#define DEFINE_DYNAMIC_ARRAY(T); \
     DEFINE_DYNAMIC_ARRAY_STRUCT(T) \
     DEFINE_DYNAMIC_ARRAY_INIT(T) \
     DEFINE_DYNAMIC_ARRAY_REALLOC(T) \
