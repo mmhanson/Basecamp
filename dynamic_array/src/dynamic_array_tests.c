@@ -187,7 +187,7 @@ void test_contraction_space()
     }
 }
 
-void test_insertion_first()
+void test_insert_first()
 {
     const int init_cap = 10;
     int size_snp;
@@ -204,7 +204,7 @@ void test_insertion_first()
     TEST_ASSERT_EQUAL(12, darr.array[0]);
 }
 
-void test_insertion_new_head()
+void test_insert_head()
 {
     const int init_cap = 10;
     int size_snp;
@@ -226,7 +226,7 @@ void test_insertion_new_head()
     TEST_ASSERT_EQUAL(head_snp, darr.array[1]); // Verify old head pushed up.
 }
 
-void test_insertion_new_tail()
+void test_insert_tail()
 {
     const int init_cap = 10;
     DynamicArray_float darr;
@@ -248,7 +248,7 @@ void test_insertion_new_tail()
     TEST_ASSERT_EQUAL(tail_snp, darr.array[darr.size - 2]); // Verify old tail.
 }
 
-void test_insertion_new_midd()
+void test_insert_midd()
 {
     const int insert_idx = 5;
     const int init_cap = 10;
@@ -277,7 +277,7 @@ void test_insertion_new_midd()
     TEST_ASSERT_EQUAL(range_snp[2], darr.array[insert_idx + 2]);
 }
 
-void test_insertion_full()
+void test_insert_full()
 {
     const int init_cap = 10;
     DynamicArray_float darr;
@@ -305,6 +305,106 @@ void test_insertion_full()
     {
         TEST_ASSERT_EQUAL(array_snp[cursor], darr.array[cursor]);
     }
+}
+
+void test_remove_first()
+{
+    const int init_cap = 10;
+    int size_snp;
+    float head_snp;
+    DynamicArray_float darr;
+
+    darr_float_init(&darr,
+                    malloc(init_cap * sizeof(float)),
+                    init_cap);
+
+    darr_float_insert(&darr, 12, 0);
+
+    TEST_ASSERT_EQUAL(1, darr.size);
+    TEST_ASSERT_EQUAL(12, darr.array[0]);
+}
+
+void test_remove_head()
+{
+    const int init_cap = 10;
+    int size_snp;
+    float head_snp;
+    DynamicArray_float darr;
+
+    darr_float_init(&darr,
+                    malloc(init_cap * sizeof(float)),
+                    init_cap);
+
+    half_fill_array(&darr);
+
+    size_snp = darr.size; // Snapshot size.
+    head_snp = darr.array[1]; // Should be new head.
+    darr_float_remove(&darr, 0);
+
+    TEST_ASSERT_EQUAL(size_snp - 1, darr.size);
+    TEST_ASSERT_EQUAL(head_snp, darr.array[0]);
+}
+
+void test_remove_tail()
+{
+    const int init_cap = 10;
+    DynamicArray_float darr;
+    int size_snp;
+    float tail_snp;
+
+    darr_float_init(&darr,
+                    malloc(init_cap * sizeof(float)),
+                    init_cap);
+
+    half_fill_array(&darr);
+
+    size_snp = darr.size;
+    tail_snp = darr.array[darr.size - 2]; // Should be new tail.
+    darr_float_remove(&darr, darr.size - 1);
+
+    TEST_ASSERT_EQUAL(size_snp - 1, darr.size);
+    TEST_ASSERT_EQUAL(tail_snp, darr.array[darr.size - 1]); // Verify new tail.
+}
+
+void test_remove_midd()
+{
+    const int remove_idx = 5;
+    const int init_cap = 10;
+    DynamicArray_float darr;
+    float range_snp[3];
+    int size_snp;
+
+    darr_float_init(&darr,
+                    malloc(init_cap * sizeof(float)),
+                    init_cap);
+
+    half_fill_array(&darr);
+
+    // Snapshot of range around removal. 
+    range_snp[0] = darr.array[remove_idx - 1];
+    range_snp[1] = darr.array[remove_idx];
+    range_snp[2] = darr.array[remove_idx + 1];
+    size_snp = darr.size;
+    darr_float_remove(&darr, remove_idx);
+
+    TEST_ASSERT_EQUAL(size_snp - 1, darr.size);
+    // Verify array goes: ..., range_snp[0], range_snp[2], ...
+    TEST_ASSERT_EQUAL(range_snp[0], darr.array[remove_idx - 1]);
+    TEST_ASSERT_EQUAL(range_snp[2], darr.array[remove_idx]);
+}
+
+void test_remove_empty()
+{
+    const int init_cap = 10;
+    DynamicArray_float darr;
+
+    darr_float_init(&darr,
+                    malloc(init_cap * sizeof(float)),
+                    init_cap);
+    darr_float_remove(&darr, 0);
+
+    TEST_ASSERT_EQUAL(0, darr.size);
+    TEST_ASSERT_EQUAL(init_cap, darr.capacity);
 }
 
 int main()
@@ -335,16 +435,27 @@ int main()
 
     /// Insertion tests.
     // Insert first elem. Verify.
-    RUN_TEST(test_insertion_first);
+    RUN_TEST(test_insert_first);
     // Partly fill array. Insert elem @ first index. Verify.
-    RUN_TEST(test_insertion_new_head);
+    RUN_TEST(test_insert_head);
     // Partly fill array. Insert elem @ last index. Verify.
-    RUN_TEST(test_insertion_new_tail);
+    RUN_TEST(test_insert_tail);
     // Partly fill array. Insert halfway in. Verify.
-    RUN_TEST(test_insertion_new_midd);
+    RUN_TEST(test_insert_midd);
     // Fill array. Attempt insertion. Verify nothing happened.
-    RUN_TEST(test_insertion_full);
+    RUN_TEST(test_insert_full);
 
+    /// Removal tests.
+    // Remove first elem. Verify.
+    RUN_TEST(test_remove_first);
+    // Partly fill array. Remove elem @ first index. Verify.
+    RUN_TEST(test_remove_head);
+    // Partly fill array. Remove elem @ last index. Verify.
+    RUN_TEST(test_remove_tail);
+    // Partly fill array. Remove halfway in. Verify.
+    RUN_TEST(test_remove_midd);
+    // Attempt removal on empty array. Verify nothing happend.
+    RUN_TEST(test_remove_empty);
 
     UNITY_END();
 }

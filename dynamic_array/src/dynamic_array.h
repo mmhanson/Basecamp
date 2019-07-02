@@ -166,14 +166,15 @@ static float __darr_recalc_load(int size, int capacity);
  *
  * @self: The dynamic array to insert into. Must have at least one open spot.
  *     Size will be incremented and load recalculated if the add is successful.
+ *     If internal array is full, nothing happens.
  * @elem: The element to be added.
  * @idx: The index to add @elem at. @elem will be the new self->array[i].
- *       CAUTION: must be in the range [0..@self.size).
+ *     CAUTION: must be in the range [0..@self.size).
  * @return: 0 if the add was successful. 1 if an expansion is suggested after
  *     the addition. 2 if the @elem could not be added, array is full.
  */
 #define DEFINE_DYNAMIC_ARRAY_INSERT(T) \
-    int darr_##T##_insert(DynamicArray_##T *self, T elem, int idx) \
+    static int darr_##T##_insert(DynamicArray_##T *self, T elem, int idx) \
     { \
         int cursor; \
         \
@@ -203,15 +204,20 @@ static float __darr_recalc_load(int size, int capacity);
  * treated as random.
  *
  * @self: The dynamic array to remove from. Size will be decremented and load
- *     will be recalculated.
+ *     will be recalculated. If internal array is empty, nothing happens.
  * @idx: The index the element to remove.
- * @return: 1 if a contraction is suggested after the removal. 0 if not.
+ * @return: 0 if the removal is successful, 1 if a contraction is suggested
+ *     after the removal, and 2 if the removal was not successful (array empty).
  */
 #define DEFINE_DYNAMIC_ARRAY_REMOVE(T) \
-    int darr_##T##_remove(DynamicArray_##T *self, int idx) \
+    static int darr_##T##_remove(DynamicArray_##T *self, int idx) \
     { \
         int cursor; \
         \
+        if (self->size == 0) \
+        { \
+            return 2; \
+        } \
         /* Copy all in range (idx..self->size) down one. Overwrites @idx. */ \
         for (cursor = idx + 1; cursor < self->size; cursor++) \
         { \
