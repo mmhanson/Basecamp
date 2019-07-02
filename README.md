@@ -1,3 +1,9 @@
+[![CC0 Stamp](http://i.creativecommons.org/p/zero/1.0/88x31.png)](http://creativecommons.org/publicdomain/zero/1.0/)
+
+To the extend possible under law, [Max Hanson](https://github.com/mmhanson/Basecamp) has waived all copyright and
+related or neighboring rights to Basecamp. This work is published from: United
+States.
+
 # Basecamp
 A header-only library of basic data structures and algorithms implemented from
 scratch in C89.
@@ -26,7 +32,7 @@ nowhere to be seen. Trade-offs are central to computer science, but engineers
 shouldn't have to choose between a buggy library, an undocumented library, a
 bloated library, a cryptic library, or no library.
 
-None of these libraries meet my need for an easy to use, portable, and lean
+None of these solutions meet the need for an easy to use, portable, and lean
 library with clear licensing and documentation. This project is my attempt to
 fill that need.
 
@@ -70,9 +76,3 @@ To use a header just find it, download it, paste it in your project, and
 `#include` it. That's it. All headers are public domain, no need to fumble with
 licensing details. However, you cannot remove my name as author from any header
 you include in your project. That would be plagiarism.
-
-## Public Domain Declaration
-[![CC0 Stamp](http://i.creativecommons.org/p/zero/1.0/88x31.png)](http://creativecommons.org/publicdomain/zero/1.0/)
-To the extend possible under law, [Max Hanson](https://github.com/mmhanson/Basecamp) has waived all copyright and
-related or neighboring rights to Basecamp. This work is published from: United
-States.
