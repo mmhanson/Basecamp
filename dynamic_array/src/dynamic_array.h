@@ -1,56 +1,55 @@
 /* A dynamic array.
  * See https://en.wikipedia.org/wiki/Dynamic_array for the theory.
- * Note that this header applies C macros in a complex way. The usage guide
- * below is meant to be approachable for everyone, but if you're still confused
- * after reading it then look into parameterized macros and maybe look up some
- * articles on making generics in C using them if you're confused.
+ * 
+ * This header uses parameterized macros in a convoluted way to create generic
+ * structs and functions. If you're not familiar with parameterized macros,
+ * you'll have a difficult time understanding whats going on. The usage guide
+ * below is meant to be accessible to anyone, but if you're confused then look
+ * into parameterized macros and maybe read some articles on making generics in
+ * C with them.
  *
- * ====================
- * ==== How to Use ====
- * ====================
-
- * === Declaration ===
- *   To use the struct and functions defined in this header, you must specify the
- *   type of data that the dynamic array is to hold (see the README for why). Do
- *   this by calling the macro `DEFINE_DYNAMIC_ARRAY(T);` where 'T' is the type
- *   that the dynamic array is to hold (note 'T' must be alphanumerical, pointers must be typecast). This will
- *   define the struct 'DynamicArray_T' and the operations:
- *     - darr_T_init(~)
- *     - darr_T_realloc(~)
- *     - darr_T_insert(~)
- *     - darr_T_remove(~)
- *   The reason the 'T' is included in the struct and operation names is so many
- *   different types of dynamic arrays can be declared and used in the same file.
- *   Calling the macro `DEFINE_DYNAMIC_ARRAY(T);` more than once does nothing.
+ * The reason I made this generic is pretty obvious in my opinion.
+ * The reason I chose to use macros to make this generic is to make this header
+ * more efficient and easier to use at the cost of making it harder to develop.
+ * This could have been done using an array of void-pointers and having the user
+ * cast them back and forth, but this approach would necessitate a lot of
+ * pointer-following and typecasting and would almost necessitate severe abuse
+ * of the heap (e.g. malloc-ing 392 ints). Yes, void pointers would be easier
+ * to develop and debugging macros like this is a circus, but using macros means
+ * taking those 392 ints scattered throughout the heap and just putting them in
+ * a consecutive array. Furthermore, it makes the operations so much easier to
+ * use without the constant casting. I think the choice between macros and void
+ * pointers is clear.
  *
- * === Declaration Walkthrough ===
- *   To define a dynamic array holding floats, I must put
- *   `DEFINE_DYNAMIC_ARRAY(float);` at the top of my source file. After this, the
-     dynamic array type DynamicArray_float is defined as well as the functions:
- *     - darr_float_init(~)
- *     - darr_float_realloc(~)
- *     - darr_float_insert(~)
- *     - darr_float_remove(~)
- *   If I also want a dynamic array holding ints, I can also put
- *   `DEFINE_DYNAMIC_ARRAY(int);` at the top of my source file. After that, the
- *   dynamic array type DynamicArray_int is defined as well as the functions:
- *     - darr_int_init(~)
- *     - darr_int_realloc(~)
- *     - darr_int_insert(~)
- *     - darr_int_remove(~)
- *   This way, I can have two types of dynamic arrays (holding floats and ints)
- *   at the same time.
+ * === How to Use ===
+ * The first thing you must do is put the macro 'DEFINE_DYNAMIC_ARRAY(T);' at
+ * the top of your file. This will declare the dynamic array struct and its
+ * operations. The struct will be named 'DynamicArray_T' and the operations will
+ * be named 'darr_T_<operation name>(~)'. For example, using the macro
+ * 'DEFINE_DYNAMIC_ARRAY(float)' will define the struct 'DynamicArray_float'
+ * and some functions prefixed with 'darr_float_...' (see source below for list
+ * of operations). Users can declare dynamic arrays holding different types.
+ * Their struct and operations are differentiated by the 'T' in their names.
  *
- * === Expansion and Contraction ===
- *   The most important part of a dynamic array is how it expands and contracts.
- *   Since this header doesn't handle memory, dynamic arrays do not
- *   automatically expand and contract. Instead, the insert and remove functions
- *   will indicate that the array is ready for an expansion or contraction with
- *   their return values. The client of this header then can choose to
- *   reallocate. The process of reallocating is made much easier with the
- *   `darr_T_copy(~)` function. Exactly when the insert and remove function will
- *   suggest an expansion or contraction is defined in the macro-constants
- *   below.
+ * After creating a DynamicArray_T, you must initialize it with a new array
+ * and set its stats (size, capacity, load). This is all automated with the
+ * 'init' operation. After that, to add and remove use the 'insert' and 'remove'
+ * operations. See the source below for their precise documentation.
+ * 
+ * Other than adding and removing, expanding and contracting is the core
+ * functionality of the dynamic array. This header doesn't manage memory (ie
+ * call `malloc` or `free` at all), so the way it creates this functionality is
+ * to 'suggest' an expansion or contraction after an insertion/removal that
+ * brings the load of the array to a certain threshold (defined in the macro-
+ * constants below). This is done by returning a '1' from the insert/remove
+ * operations (see function docs below for more info). Users don't need to
+ * expand or contract the array. If an array is full/empty and the user
+ * inserts/removes an element, nothing will happen.
+ * 
+ * However, if users do choose to expand/contract the array, this process is
+ * made much easier with the 'realloc' operation. It doesn't allocate the new
+ * array, but it allows the user to reallocate the array in one line.
+ * 
  *
  * Written by Max Hanson, June 2019.
  * Released into the public domain under CC0. See README.md for more details.
@@ -71,8 +70,6 @@ static float __darr_recalc_load(int size, int capacity);
 
 /*
  * Macro to define a dynamic array of type T and its operations.
- * The `#ifndef` is so no errors will show if a dynamic array of the same type
- * is declared twice or more.
  *
  * @T: the type parameter. Must be alphanumerical (pointers must be typecast).
  */
@@ -130,7 +127,7 @@ static float __darr_recalc_load(int size, int capacity);
  * This function is meant as a convenience to handle the process of expanding
  * a dynamic array. The entire process of allocating a new array, copying the
  * elements, freeing the old array, and tracking the new statistics can be
- * consolidated to one function call.
+ * consolidated to one line.
  *
  * @self: Its internal array's elements will be copied to @new_array, then
  *     @new_array will become its new internal array.
@@ -230,7 +227,7 @@ static float __darr_recalc_load(int size, int capacity);
         return (self->load <= CONTRACTION_POINT ? 1 : 0); \
     }
 
-/* === HELPER METHODS === */
+/* === HELPER FUNCTIONS === */
 
 /*
  * Recalculate the load of a dynamic array.

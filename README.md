@@ -32,14 +32,20 @@ fill that need.
 
 
 ## Project Goals
-This project is designed to be:
+Put in a loose way, this library is suppossed to take all those scraggly helper-
+functions and structs for handling data structures and algorithms and
+consolidate them to a set of well-made headers. No need to write *yet another*
+helper function to reallocate an array, the dynamic_array header does this for
+you.
+
+More precisely, this library is designed to be:
   * Easy to understand and integrate into other projects. 
     * All code is well and clearly documented.
       * Names of all functions, structs, and macros are designed to be
         self-documenting and intuitive rather than terse and complex.
       * The precise behavior and purpose for each function, struct and macro
         are thoroughly and plainly documented above its definition.
-      * Examples, usage guides, and readmes are included *for each header*.
+      * Examples and usage guides are included *for each header*.
     * All data structures and algorithms are header-only.
     * All original code is public domain. `#include` them without licensing
       headaches or worry!
