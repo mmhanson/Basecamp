@@ -69,7 +69,7 @@ More precisely, this library is designed to be:
 At the top of this repository, there is a 'deps' folder for the Unity testing
 framework and a folder for each data structure and algorithm header. In each
 sub-folder is the header for that data structure or algorithm, examples of
-usage, unit tests, and a readme.
+usage, and unit tests.
 
 ## Using Headers
 To use a header just find it, download it, paste it in your project, and
