@@ -38,8 +38,8 @@ fill that need.
 
 
 ## Project Goals
-Put in a loose way, this library is suppossed to take all those scraggly helper-
-functions and structs for handling data structures and algorithms and
+Put in a loose way, this library is suppossed to take all those scraggly
+helper-functions and structs for handling data structures and algorithms and
 consolidate them to a set of well-made headers. No need to write *yet another*
 helper function to reallocate an array, the dynamic_array header does this for
 you.
@@ -55,9 +55,9 @@ More precisely, this library is designed to be:
     * All data structures and algorithms are header-only.
     * All original code is public domain. `#include` them without licensing
       headaches or worry!
-    * All data structures and algorithms are written in strict C89 for
+    * All headers are written in strict C89 for
       maximum portability.
-    * All data structures and algorithms are strictly generic.
+    * All headers are strictly generic.
   * Lean and fast.
     * Only the most basic and useful operations are included in each header to
       minimize bloat.
