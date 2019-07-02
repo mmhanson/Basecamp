@@ -16,10 +16,13 @@ example: obj/dynamic_array_example.o
 
 obj/dynamic_array_example.o: src/dynamic_array_example.c
 	# Compile example under strict c89 and ansi standards.
+	mkdir -p obj
 	gcc -g -c --std=c89 -ansi -pedantic -o obj/dynamic_array_example.o src/dynamic_array_example.c
 
 obj/dynamic_array_tests.o: src/dynamic_array_tests.c
+	mkdir -p obj
 	gcc -g -c -o obj/dynamic_array_tests.o src/dynamic_array_tests.c
 
 obj/unity.o: ../deps/unity/unity.c
+	mkdir -p obj
 	gcc -g -c -o obj/unity.o ../deps/unity/unity.c

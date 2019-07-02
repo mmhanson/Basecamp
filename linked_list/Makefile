@@ -19,10 +19,13 @@ example: obj/linked_list_example.o
 	gcc -o example obj/linked_list_example.o
 
 obj/linked_list_example.o: src/linked_list_example.c
+	mkdir -p obj
 	gcc -std=c89 -ansi -pedantic -c -g -o obj/linked_list_example.o src/linked_list_example.c
 
 obj/linked_list_tests.o: src/linked_list_tests.c
+	mkdir -p obj
 	gcc -g -c -o obj/linked_list_tests.o src/linked_list_tests.c
 
 obj/unity.o: ../deps/unity/unity.c
+	mkdir -p obj
 	gcc -g -c -o obj/unity.o ../deps/unity/unity.c
