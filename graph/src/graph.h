@@ -1,6 +1,20 @@
 /*
  * A simple directed graph implemented with an adjacency list.
  *
+ * This header was designed to be basic and easily extendable/modifiable. It was
+ * not designed to be the catch-all tool for all your graphing needs. In fact,
+ * I think most use cases will require some modification to this header, this
+ * header just serves as a starting point.
+ *
+ * === How to Use ===
+ * The use of this header is fairly straightforward except for the memory
+ * allocation. This header performs no memory allocation, so the user is
+ * required to allocate and provide the structs for these operations to work
+ * with.
+ * The nodes in the graph use a linked-list-like structure to keep their edges
+ * out. Instead of having one link for each edge out, they are grouped in
+ * 'buckets' of a handful of edges and then those buckets are linked together.
+ * The user will need to allocate these 
  *
  *
  * Written by Max Hanson, September 2019.
@@ -81,22 +95,13 @@ void graph_init(Graph *graph, Node* node_arr, int node_arr_size)
 }
 
 /*
- * Initialize a bucket.
- * Makes all attributes of @bucket null.
- *
- * @bucket: The bucket to initialize.
- */
-void graph_bucket_init(Bucket *bucket)
-{
-    
-}
-
-/*
- * Add a bucket to a node's edges-out-list.
+ * Initialize and add a bucket to a node's edges-out-list.
  *
  * @graph: The graph.
  * @node_id: Id of the node to add @bucket.
- * @bucket: pointer to bucket object to use for @node.
+ * @bucket: pointer to bucket object to use for @node. Assumed to be just
+ *   allocated. All fields will be initialized to null. Will be linked into the
+ *   node's list of buckets as the last bucket.
  * @return: 0 if the bucket was added. -1 if the node could not be found.
  */
 int graph_add_bucket(Graph *graph, int node_id, Bucket* bucket)

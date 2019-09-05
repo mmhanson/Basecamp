@@ -31,21 +31,6 @@ void test_init_values()
     }
 }
 
-void test_init_bucket_values()
-{
-    Bucket *bucket;
-    int idx;
-
-    bucket = malloc(sizeof(Bucket));
-    graph_bucket_init(bucket);
-
-    for (idx = 0; idx < BUCKET_SIZE; idx++)
-    {
-        TEST_ASSERT_EQUAL( NULL, (bucket->adj_nodes)[idx] );
-    }
-    TEST_ASSERT_EQUAL(NULL, bucket->next);
-}
-
 void test_add_first_bucket()
 {
     Graph graph;
@@ -60,6 +45,12 @@ void test_add_first_bucket()
 
     TEST_ASSERT_EQUAL(0, retval);
     TEST_ASSERT_EQUAL(bucket, graph.nodes[0].edges_out);
+    /* Validate bucket attributes. */
+    for (idx = 0; idx < BUCKET_SIZE; idx++)
+    {
+        TEST_ASSERT_EQUAL( NULL, (bucket->adj_nodes)[idx] );
+    }
+    TEST_ASSERT_EQUAL(NULL, bucket->next);
 }
 
 void test_add_another_bucket()
@@ -440,10 +431,8 @@ int main()
 
     /* Init graph. Verify initial values. */
     RUN_TEST(test_init_values);
-    /* Init bucket. Verify initial values. */
-    RUN_TEST(test_init_bucket_values);
 
-    /* Add a bucket to an empty graph. Verify. */
+    /* Add a bucket to an empty graph. Verify. Verify attr init'n of bucket. */
     RUN_TEST(test_add_first_bucket);
     /* Add two buckets to one node. Verify. */
     RUN_TEST(test_add_another_bucket);
