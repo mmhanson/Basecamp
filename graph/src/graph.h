@@ -96,6 +96,7 @@ void graph_bucket_init(Bucket *bucket)
  * @graph: The graph.
  * @node_id: Id of the node to add @bucket.
  * @bucket: pointer to bucket object to use for @node.
+ * @return: 0 if the bucket was added. -1 if the node could not be found.
  */
 int graph_add_bucket(Graph *graph, int node_id, Bucket* bucket)
 {
