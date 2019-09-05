@@ -18,8 +18,8 @@
  * A bucket of edges out of a vertex.
  * Each node in the graph has a linked list of outgoing edges. These edges are
  * stored in 'buckets' of a few edges out (the exact number defined in
- * BUCKET_SIZE) and links to the next. This reduces pointer-following and reduces
- * the load on the heap.
+ * BUCKET_SIZE) and links to the next. This reduces indirection and the load on
+ * the heap.
  *
  * @adjNodes: Edges out of the node.
  * @next: The next bucket. Null if this is the last bucket.
@@ -47,16 +47,33 @@ typedef struct NodeTag
  * A graph.
  * CAUTION: @num_nodes <= size(@nodes).
  *
+ * @capacity: The maximum number of nodes the graph can hold.
  * @num_nodes: The number of nodes in the graph.
  * @num_edges: The number of edges in the graph.
  * @nodes: A pointer to an array containing the graph's nodes.
  */
 typedef struct GraphTag
 {
+    int capacity;
     int num_nodes;
     int num_edges;
     Node *nodes;
 } Graph;
+
+/*
+ * Initialize a graph.
+ * @graph will be initialized to use @node_arr for its node storage and its
+ * attributes will be updated. @graph.capacity will equal @node_arr_size,
+ * @graph.num_nodes and @graph.num_edges will equal zero.
+ *
+ * @graph: The graph to initialize.
+ * @node_arr: An array for the graph to keep its nodes in.
+ * @node_arr_size: The size of @node_arr.
+ */
+void graph_init(Graph *graph, Node* node_arr, int node_arr_size)
+{
+
+}
 
 /*
  * Add an edge to a graph.
