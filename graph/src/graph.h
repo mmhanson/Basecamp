@@ -68,7 +68,8 @@ struct GraphTag
  * @graph will be initialized to use @node_arr for its node storage and its
  * attributes will be updated. @graph.size will equal @node_arr_size,
  * @graph.num_nodes and @graph.num_edges will equal zero. Every node in @graph's
- * node list will receive an id equal to its index (ie 0..n-1).
+ * node list will receive an id equal to its index (ie 0..n-1) and every node's
+ * 'edges_out' pointer will be 0.
  *
  * @graph: The graph to initialize.
  * @node_arr: An array for the graph to keep its nodes in.
@@ -118,24 +119,13 @@ int graph_add_edge(Graph *graph, int from_id, int to_id)
 }
 
 /*
- * Add a node to a graph.
- *
- * @graph: the graph to add the node to.
- * @bucket: pointer to the bucket the node will use for storing edges out.
- * @return: the id of the node (a positive number) if successful, -1 if the node
- *   couldn't be added (ie @graph's array of nodes is full).
- */
-int graph_add_node(Graph *graph, Bucket *bucket)
-{
-    
-}
-
-/*
  * Remove an edge from a graph.
  *
  * @graph: the graph to remove the edge from.
  * @from_id: the id of the node the edge starts at.
  * @to_id: the id of the node the edge ends at.
+ * @return: 0 if the edge was deleted. 1 if the edge does not exist. -1 if
+ *   either node id is invalid.
  */
 void graph_del_edge(Graph *graph, int from_id, int to_id)
 {
@@ -151,18 +141,6 @@ void graph_del_edge(Graph *graph, int from_id, int to_id)
  * @return: 0 if the graph has the edge. 1 if not.
  */
 int graph_has_edge(Graph *graph, int from_id, int to_id)
-{
-    
-}
-
-/*
- * Determine if a node exists in a graph.
- *
- * @graph: the graph to check for the node.
- * @id: the id of the node to add.
- * @return: 0 if the graph has the node, 1 if not.
- */
-int graph_has_node(Graph *graph, int id)
 {
     
 }
