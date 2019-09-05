@@ -14,6 +14,10 @@
 // How many edges out per bucket.
 #define BUCKET_SIZE 10
 
+typedef struct BucketTag Bucket;
+typedef struct NodeTag Node;
+typedef struct GraphTag Graph;
+
 /*
  * A bucket of edges out of a vertex.
  * Each node in the graph has a linked list of outgoing edges. These edges are
@@ -21,13 +25,12 @@
  * BUCKET_SIZE) and links to the next. This reduces indirection and the load on
  * the heap.
  *
- * @adjNodes: Edges out of the node.
+ * @adj_nodes: Edges out of the node.
  * @next: The next bucket. Null if this is the last bucket.
  */
-typedef struct BucketTag Bucket;
 struct BucketTag
 {
-    Node *adjNodes[BUCKET_SIZE];
+    Node *adj_nodes[BUCKET_SIZE];
     Bucket *next;
 };
 
@@ -37,34 +40,35 @@ struct BucketTag
  * @id: The node's unique identifying number. Always positive.
  * @edges_out: Linked list of each edge leaving this node.
  */
-typedef struct NodeTag
+struct NodeTag
 {
     int id;
     Bucket* edges_out;
-} Node;
+};
 
 /*
  * A graph.
  * CAUTION: @num_nodes <= size(@nodes).
  *
- * @capacity: The maximum number of nodes the graph can hold.
+ * @size: The maximum number of nodes the graph can hold.
  * @num_nodes: The number of nodes in the graph.
  * @num_edges: The number of edges in the graph.
  * @nodes: A pointer to an array containing the graph's nodes.
  */
-typedef struct GraphTag
+struct GraphTag
 {
-    int capacity;
+    int size;
     int num_nodes;
     int num_edges;
     Node *nodes;
-} Graph;
+};
 
 /*
  * Initialize a graph.
  * @graph will be initialized to use @node_arr for its node storage and its
- * attributes will be updated. @graph.capacity will equal @node_arr_size,
- * @graph.num_nodes and @graph.num_edges will equal zero.
+ * attributes will be updated. @graph.size will equal @node_arr_size,
+ * @graph.num_nodes and @graph.num_edges will equal zero. Every node in @graph's
+ * node list will receive an id equal to its index (ie 0..n-1).
  *
  * @graph: The graph to initialize.
  * @node_arr: An array for the graph to keep its nodes in.
@@ -76,14 +80,38 @@ void graph_init(Graph *graph, Node* node_arr, int node_arr_size)
 }
 
 /*
+ * Initialize a bucket.
+ * Makes all attributes of @bucket null.
+ *
+ * @bucket: The bucket to initialize.
+ */
+void graph_bucket_init(Bucket *bucket)
+{
+    
+}
+
+/*
+ * Add a bucket to a node's edges-out-list.
+ *
+ * @graph: The graph.
+ * @node_id: Id of the node to add @bucket.
+ * @bucket: pointer to bucket object to use for @node.
+ */
+int graph_add_bucket(Graph *graph, int node_id, Bucket* bucket)
+{
+    
+}
+
+/*
  * Add an edge to a graph.
  *
  * @graph: the graph to remove the edge from.
  * @from_id: the id of the node the edge starts at.
  * @to_id: the id of the node the edge ends at.
- * @return: 0 if the edge was added, 1 if it could not be.
+ * @return: 0 if the edge was added, -1 if there wasn't enough space for it,
+ *   and -2 if either node doesn't exist.
  */
-int add_edge(Graph *graph, int from_id, int to_id)
+int graph_add_edge(Graph *graph, int from_id, int to_id)
 {
 
 }
@@ -94,9 +122,9 @@ int add_edge(Graph *graph, int from_id, int to_id)
  * @graph: the graph to add the node to.
  * @bucket: pointer to the bucket the node will use for storing edges out.
  * @return: the id of the node (a positive number) if successful, -1 if the node
- *          couldn't be added (ie @graph's array of nodes is full).
+ *   couldn't be added (ie @graph's array of nodes is full).
  */
-int add_node(Graph *graph, Bucket *bucket)
+int graph_add_node(Graph *graph, Bucket *bucket)
 {
     
 }
@@ -108,7 +136,7 @@ int add_node(Graph *graph, Bucket *bucket)
  * @from_id: the id of the node the edge starts at.
  * @to_id: the id of the node the edge ends at.
  */
-void rem_edge(Graph *graph, int from_id, int to_id)
+void graph_del_edge(Graph *graph, int from_id, int to_id)
 {
     
 }
@@ -121,7 +149,7 @@ void rem_edge(Graph *graph, int from_id, int to_id)
  * @to_id: the id of the node the edge ends at.
  * @return: 0 if the graph has the edge. 1 if not.
  */
-int has_edge(Graph *graph, int from_id, int to_id)
+int graph_has_edge(Graph *graph, int from_id, int to_id)
 {
     
 }
@@ -133,7 +161,7 @@ int has_edge(Graph *graph, int from_id, int to_id)
  * @id: the id of the node to add.
  * @return: 0 if the graph has the node, 1 if not.
  */
-int has_node(Graph *graph, int id)
+int graph_has_node(Graph *graph, int id)
 {
     
 }
