@@ -27,7 +27,7 @@ void test_init_values()
     for (idx = 0; idx < INIT_SIZE; idx++)
     {
         TEST_ASSERT_EQUAL(idx, graph.nodes[idx].id);
-        TEST_ASSERT_EQUAL(Null, graph.nodes[idx].edges_out);
+        TEST_ASSERT_EQUAL(NULL, graph.nodes[idx].edges_out);
     }
 }
 
@@ -37,10 +37,10 @@ void test_add_first_bucket()
     Node node_arr[INIT_SIZE];
     Bucket *bucket;
     int retval;
+    int idx;
 
     graph_init(&graph, node_arr, INIT_SIZE);
     bucket = malloc(sizeof(Bucket));
-    graph_bucket_init(bucket);
     retval = graph_add_bucket(&graph, 0, bucket);
 
     TEST_ASSERT_EQUAL(0, retval);
@@ -65,8 +65,6 @@ void test_add_another_bucket()
     graph_init(&graph, node_arr, INIT_SIZE);
     bucket0 = malloc(sizeof(Bucket));
     bucket1 = malloc(sizeof(Bucket));
-    graph_bucket_init(bucket0);
-    graph_bucket_init(bucket1);
     retval0 = graph_add_bucket(&graph, 0, bucket0);
     retval1 = graph_add_bucket(&graph, 0, bucket1);
 
@@ -85,7 +83,6 @@ void test_add_bucket_invalid_node()
 
     graph_init(&graph, node_arr, INIT_SIZE);
     bucket = malloc(sizeof(Bucket));
-    graph_bucket_init(bucket);
     retval = graph_add_bucket(&graph, INIT_SIZE + 1, bucket);
 
     TEST_ASSERT_EQUAL(1, retval);
@@ -103,7 +100,6 @@ void test_basic_add_edge()
     for (idx = 0; idx < INIT_SIZE; idx++)
     {
         bucket = malloc(sizeof(Bucket));
-        graph_bucket_init(bucket);
         graph_add_bucket(&graph, idx, bucket);
     }
     graph_add_edge(&graph, 0, 1);
@@ -124,7 +120,6 @@ void test_double_edge()
     for (idx = 0; idx < INIT_SIZE; idx++)
     {
         bucket = malloc(sizeof(Bucket));
-        graph_bucket_init(bucket);
         graph_add_bucket(&graph, idx, bucket);
     }
     graph_add_edge(&graph, 0, 1);
@@ -146,7 +141,6 @@ void test_add_couple_edges()
     for (idx = 0; idx < INIT_SIZE; idx++)
     {
         bucket = malloc(sizeof(Bucket));
-        graph_bucket_init(bucket);
         graph_add_bucket(&graph, idx, bucket);
     }
     graph_add_edge(&graph, 0, 1);
@@ -182,7 +176,6 @@ void test_add_invalid_edges()
     for (idx = 0; idx < INIT_SIZE; idx++)
     {
         bucket = malloc(sizeof(Bucket));
-        graph_bucket_init(bucket);
         graph_add_bucket(&graph, idx, bucket);
     }
 
@@ -225,7 +218,6 @@ void test_basic_del_edge()
     for (idx = 0; idx < INIT_SIZE; idx++)
     {
         bucket = malloc(sizeof(Bucket));
-        graph_bucket_init(bucket);
         graph_add_bucket(&graph, idx, bucket);
     }
 
@@ -248,7 +240,6 @@ void test_del_couple_edges()
     for (idx = 0; idx < INIT_SIZE; idx++)
     {
         bucket = malloc(sizeof(Bucket));
-        graph_bucket_init(bucket);
         graph_add_bucket(&graph, idx, bucket);
     }
 
@@ -280,7 +271,6 @@ void test_del_nonexistent_edge()
     for (idx = 0; idx < INIT_SIZE; idx++)
     {
         bucket = malloc(sizeof(Bucket));
-        graph_bucket_init(bucket);
         graph_add_bucket(&graph, idx, bucket);
     }
 
@@ -302,7 +292,6 @@ void test_del_invalid_edges()
     for (idx = 0; idx < INIT_SIZE; idx++)
     {
         bucket = malloc(sizeof(Bucket));
-        graph_bucket_init(bucket);
         graph_add_bucket(&graph, idx, bucket);
     }
 
@@ -332,7 +321,6 @@ void test_del_edges_populated_nodes()
     for (idx = 0; idx < INIT_SIZE; idx++)
     {
         bucket = malloc(sizeof(Bucket));
-        graph_bucket_init(bucket);
         graph_add_bucket(&graph, idx, bucket);
     }
 
@@ -380,7 +368,6 @@ void test_basic_not_has_edge()
     for (idx = 0; idx < INIT_SIZE; idx++)
     {
         bucket = malloc(sizeof(Bucket));
-        graph_bucket_init(bucket);
         graph_add_bucket(&graph, idx, bucket);
     }
 
@@ -407,7 +394,6 @@ void test_has_edge_invalid_nodes()
     for (idx = 0; idx < INIT_SIZE; idx++)
     {
         bucket = malloc(sizeof(Bucket));
-        graph_bucket_init(bucket);
         graph_add_bucket(&graph, idx, bucket);
     }
 
@@ -463,7 +449,7 @@ int main()
     RUN_TEST(test_del_edges_populated_nodes);
 
     /* Test if an empty graph (nodes but no buckets) has an edge. */
-    RUN_TEST(test_graph_has_edge_empty_graph);
+    RUN_TEST(test_has_edge_empty_graph);
     /* Test a nonempty graph (nodes have buckets) for nonexistent edges. */
     RUN_TEST(test_basic_not_has_edge);
     /* Test a nonemtpy graph for edges of invalid nodes. */

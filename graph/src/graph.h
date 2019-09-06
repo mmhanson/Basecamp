@@ -14,8 +14,9 @@
  * The nodes in the graph use a linked-list-like structure to keep their edges
  * out. Instead of having one link for each edge out, they are grouped in
  * 'buckets' of a handful of edges and then those buckets are linked together.
- * The user will need to allocate these 
- *
+ * The user will need to allocate these buckets and add them to nodes with the
+ * 'add_bucket' operation if there is no space for an edge to be added to a
+ * node. The nodes of a newly-initialized graph have no buckets.
  *
  * Written by Max Hanson, September 2019.
  * Released into the public domain under CC0. See README.md for more details.
@@ -25,7 +26,7 @@
 #define GRAPH_H
 
 
-// How many edges out per bucket.
+/* How many edges out per bucket. */
 #define BUCKET_SIZE 10
 
 typedef struct BucketTag Bucket;
@@ -80,10 +81,13 @@ struct GraphTag
 /*
  * Initialize a graph.
  * @graph will be initialized to use @node_arr for its node storage and its
- * attributes will be updated. @graph.size will equal @node_arr_size,
- * @graph.num_nodes and @graph.num_edges will equal zero. Every node in @graph's
- * node list will receive an id equal to its index (ie 0..n-1) and every node's
- * 'edges_out' pointer will be 0.
+ * attributes will be initialized:
+ *   size: @node_arr_size
+ *   num_nodes, num_edges: 0
+ *   nodes: Each node in the array will get an id equal to their index and its
+ *     edges_out attribute will be null.
+ * @graph's previous 'nodes' attribute will not be modified, so this function
+ * can be used to re-initialize a graph to expand/contract it.
  *
  * @graph: The graph to initialize.
  * @node_arr: An array for the graph to keep its nodes in.
@@ -132,7 +136,7 @@ int graph_add_edge(Graph *graph, int from_id, int to_id)
  * @return: 0 if the edge was deleted. 1 if the edge does not exist. -1 if
  *   either node id is invalid.
  */
-void graph_del_edge(Graph *graph, int from_id, int to_id)
+int graph_del_edge(Graph *graph, int from_id, int to_id)
 {
     
 }
