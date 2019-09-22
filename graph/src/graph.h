@@ -226,17 +226,18 @@ static void graph_del_edge(Graph *graph, int from_id, int to_id)
  */
 static int graph_has_edge(Graph *graph, int from_id, int to_id)
 {
-    Node **edge;
+    Node **edge_ptr;
 
-    edge = graph_find_edge(graph, from_id, to_id);
+    edge_ptr = graph_find_edge(graph, from_id, to_id);
 
-    if (edge == 0)
+    if (edge_ptr == 0)
     {
-        return 0;
+        /*  pointer to the edge is null, there is no such edge  */
+        return 1;
     }
     else
     {
-        return 1;
+        return 0;
     }
 }
 
