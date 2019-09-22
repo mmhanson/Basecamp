@@ -167,8 +167,6 @@ static void graph_add_bucket(Graph *graph, int node_id, Bucket* bucket)
         }
         cursor->next = bucket;
     }
-
-    return 0;
 }
 
 /*
@@ -191,7 +189,7 @@ static int graph_add_edge(Graph *graph, int from_id, int to_id)
     }
 
     node_to = graph_find_node_by_id(graph, to_id);
-    (*edge) = node_to;
+    (*edge_spot) = node_to;
 
     return 0;
 }
@@ -228,13 +226,13 @@ static void graph_del_edge(Graph *graph, int from_id, int to_id)
  */
 static int graph_has_edge(Graph *graph, int from_id, int to_id)
 {
-    int status;
+    Node **edge;
 
-    status = graph_find_edge(graph, from_id, to_id);
+    edge = graph_find_edge(graph, from_id, to_id);
 
-    if (status == 0)
+    if (edge == 0)
     {
-        return status;
+        return 0;
     }
     else
     {
@@ -341,7 +339,7 @@ static Node **graph_find_pointer(Graph *graph, Node *node_from, Node *node_to)
             if (adj_nodes[idx] == node_to)
             {
                 /*  pointer is found  */
-                return adj_nodes[idx]
+                return &(adj_nodes[idx]);
             }
         }
 
