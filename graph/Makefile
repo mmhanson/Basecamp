@@ -8,7 +8,7 @@ clean:
 	rm -rf tests
 	rm -rf example
 
-tests: obj/graph_tests.o obj/unity.o
+tests: obj/graph_tests.o obj/unity.o src/graph.h
 	gcc -g -o tests obj/graph_tests.o obj/unity.o
 
 example: obj/graph_example.o

@@ -213,7 +213,7 @@ void test_del_couple_edges()
     graph_add_edge(&graph, 3, 4);
 
     graph_del_edge(&graph, 0, 1);
-    graph_add_edge(&graph, 1, 2);
+    graph_del_edge(&graph, 1, 2);
 
     TEST_ASSERT_EQUAL(1, graph_has_edge(&graph, 0, 1));
     TEST_ASSERT_EQUAL(1, graph_has_edge(&graph, 1, 2));
